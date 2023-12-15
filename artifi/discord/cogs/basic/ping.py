@@ -10,7 +10,7 @@ class Ping(Cog):
     def __init__(self, bot):
         self._bot: Discord = bot
 
-    @command('ping', help="Calculate The Latency Of The Server.")
+    @command("ping", help="Calculate The Latency Of The Server.")
     async def ping_command(self, ctx):
         if not self._bot.sudo_only(ctx):
             return await send_message(ctx, "Access Denied...!")

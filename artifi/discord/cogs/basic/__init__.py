@@ -1,1 +1,1 @@
-from . import shell, error, purge, stats, ping, network
+from . import error, network, ping, purge, shell, stats

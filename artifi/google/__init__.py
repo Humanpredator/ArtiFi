@@ -10,9 +10,10 @@ from artifi import Artifi
 class Google:
     def __init__(self, context):
         self.context: Artifi = context
-        self._default_scopes: list = ["https://www.googleapis.com/auth/userinfo.profile",
-                                      "https://www.googleapis.com/auth/contacts"
-                                      ]
+        self._default_scopes: list = [
+            "https://www.googleapis.com/auth/userinfo.profile",
+            "https://www.googleapis.com/auth/contacts",
+        ]
         self._creds = self._get_auth()
 
     def _get_auth(self, scope=None):
@@ -31,8 +32,7 @@ class Google:
                 if not os.path.exists(credential_path):
                     self.context.logger.error("Opps!, credentials.json Not Found...!")
                     raise FileNotFoundError
-                flow = InstalledAppFlow.from_client_secrets_file(
-                    credential_path, scope)
+                flow = InstalledAppFlow.from_client_secrets_file(credential_path, scope)
                 creds = flow.run_local_server(port=0)
             with open(token_path, "wb") as token:
                 pickle.dump(creds, token)

@@ -1,21 +1,26 @@
 from pathlib import Path
-from typing import Union, List
+from typing import List, Union
 
-from discord import Embed, Message, File, Member, NotFound
+from discord import Embed, File, Member, Message, NotFound
 from discord.ext.commands import Context
 
 
-async def send_message(ctx: Union[Context, Member], content: str = None, embed: Embed = None, files: str = None,
-                       reply: bool = False,
-                       markup=None,
-                       delete: float = None) -> Message | None:
+async def send_message(
+    ctx: Union[Context, Member],
+    content: str = None,
+    embed: Embed = None,
+    files: str = None,
+    reply: bool = False,
+    markup=None,
+    delete: float = None,
+) -> Message | None:
     payload = {
         "content": content,
         "embed": embed,
         "files": fileio(files),
         "delete_after": delete,
         "reference": ctx.message if reply else None,
-        "view": markup
+        "view": markup,
     }
     try:
         return await ctx.send(**payload)
@@ -23,15 +28,20 @@ async def send_message(ctx: Union[Context, Member], content: str = None, embed: 
         return None
 
 
-async def edit_message(message: Message, content: str = None, embed: Embed = None, files: str = None,
-                       delete: float = None,
-                       markup=None) -> Message | None:
+async def edit_message(
+    message: Message,
+    content: str = None,
+    embed: Embed = None,
+    files: str = None,
+    delete: float = None,
+    markup=None,
+) -> Message | None:
     payload = {
         "content": content,
         "embed": embed,
         "attachments": fileio(files),
         "delete_after": delete,
-        "view": markup
+        "view": markup,
     }
     try:
         return await message.edit(**payload)
@@ -46,13 +56,18 @@ async def delete_message(message: Message, delay: float = None) -> None:
         return None
 
 
-async def send_files(ctx: Context, content: str = None, files: str = None, reply: bool = False,
-                     delete: float = None) -> Message | None:
+async def send_files(
+    ctx: Context,
+    content: str = None,
+    files: str = None,
+    reply: bool = False,
+    delete: float = None,
+) -> Message | None:
     payload = {
         "content": content,
         "files": fileio(files),
         "delete_after": delete,
-        "reference": ctx.message if reply else None
+        "reference": ctx.message if reply else None,
     }
     try:
         return await ctx.send(**payload)
@@ -70,4 +85,8 @@ def fileio(files: Union[str, Path, List[Union[str, Path]]]) -> List[File]:
     else:
         files = []
     # Filter out file that don't exist and convert the remaining paths to File objects
-    return [File(file) for file in files if isinstance(file, (str, Path)) and Path(file).exists()]
+    return [
+        File(file)
+        for file in files
+        if isinstance(file, (str, Path)) and Path(file).exists()
+    ]

@@ -1,4 +1,4 @@
-from typing import Optional, Generator
+from typing import Generator, Optional
 
 from googleapiclient.discovery import build
 
@@ -10,14 +10,20 @@ class GoogleContact(Google):
     def __init__(self, context):
         super().__init__(context)
         self.context: Artifi = context
-        self._service = build('people', 'v1', credentials=self._creds)
+        self._service = build("people", "v1", credentials=self._creds)
 
     def get_contacts(self) -> Generator:
-        results = self._service.people().connections().list(
-            resourceName='people/me',
-            pageSize=1000,
-            personFields='addresses,ageRanges,biographies,birthdays,calendarUrls,clientData,coverPhotos,emailAddresses,events,externalIds,genders,imClients,interests,locales,locations,memberships,metadata,miscKeywords,names,nicknames,occupations,organizations,phoneNumbers,photos,relations,sipAddresses,skills,urls,userDefined').execute()
-        connections = results.get('connections', [])
+        results = (
+            self._service.people()
+            .connections()
+            .list(
+                resourceName="people/me",
+                pageSize=1000,
+                personFields="addresses,ageRanges,biographies,birthdays,calendarUrls,clientData,coverPhotos,emailAddresses,events,externalIds,genders,imClients,interests,locales,locations,memberships,metadata,miscKeywords,names,nicknames,occupations,organizations,phoneNumbers,photos,relations,sipAddresses,skills,urls,userDefined",
+            )
+            .execute()
+        )
+        connections = results.get("connections", [])
         for people in connections:
             yield GoogleContactObj(people)
 
@@ -32,15 +38,17 @@ class GoogleContactObj:
         self.__call__()
 
     def __call__(self, *args, **kwargs):
-        if names := self._contact_obj.get('names'):
-            self._profile_name = names[0]['displayName']
-        if birthdays := self._contact_obj.get('birthdays'):
-            date = birthdays[0]['date']
+        if names := self._contact_obj.get("names"):
+            self._profile_name = names[0]["displayName"]
+        if birthdays := self._contact_obj.get("birthdays"):
+            date = birthdays[0]["date"]
             self._profile_dob = f"{date['year']}-{date['month']}-{date['day']}"
-        if phone_number := self._contact_obj.get('phoneNumbers'):
-            self._mobile_number = [(data['value'].replace(" ", ""), data['type']) for data in phone_number]
-        if photos := self._contact_obj.get('photos'):
-            self._profile_url = photos[0]['url']
+        if phone_number := self._contact_obj.get("phoneNumbers"):
+            self._mobile_number = [
+                (data["value"].replace(" ", ""), data["type"]) for data in phone_number
+            ]
+        if photos := self._contact_obj.get("photos"):
+            self._profile_url = photos[0]["url"]
 
     @property
     def profile_name(self) -> str:

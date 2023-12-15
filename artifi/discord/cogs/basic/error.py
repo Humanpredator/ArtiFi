@@ -9,7 +9,9 @@ class ErrorHandler(Cog):
 
     @Cog.listener(name="on_error")
     async def discord_error(self, event, *args, **kwargs):
-        self._bot.context.logger.error(f"Something Went Wrong On Discord: | {event} |, | {args} |, | {kwargs} |")
+        self._bot.context.logger.error(
+            f"Something Went Wrong On Discord: | {event} |, | {args} |, | {kwargs} |"
+        )
 
 
 async def setup(bot):

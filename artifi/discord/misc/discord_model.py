@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from sqlalchemy import Column, INTEGER, VARCHAR, TIMESTAMP
+from sqlalchemy import INTEGER, TIMESTAMP, VARCHAR, Column
 
 from artifi import Artifi
 
