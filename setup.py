@@ -6,6 +6,8 @@ setup(
     author="Humanpredator",
     author_email="humanpredator@reality.org.in",
     description="A Automation Tool Made By Noob",
+    long_description="Collection of Some Random Api, FAFO",
+    long_description_content_type="text/markdown",
     url="https://github.com/Humanpredator/ArtiFi",  # Replace with your repository URL
     packages=find_packages(),
     classifiers=[
