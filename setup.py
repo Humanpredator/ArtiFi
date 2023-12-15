@@ -13,9 +13,10 @@ setup(
     classifiers=[
         "Development Status :: 3 - Alpha",
         "Intended Audience :: Developers",
-        "License :: OSI Approved :: GNU GENERAL PUBLIC LICENSE",
+        "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
         "Programming Language :: Python :: 3.10",
     ],
+
     python_requires=">=3.10",
     install_requires=['aiofiles==23.2.1', 'aiohttp==3.9.0', 'aiosignal==1.3.1', 'annotated-types==0.6.0',
                       'anyio==3.7.1', 'APScheduler==3.10.4', 'asgiref==3.7.2', 'async-property==0.2.2',
