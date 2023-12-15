@@ -11,7 +11,7 @@ class MyHelpCommand(HelpCommand):
         embed = discord.Embed(
             title="My Bot Help",
             description="Here are the available commands:",
-            color=discord.Color.blue()
+            color=discord.Color.blue(),
         )
 
         # Specify the cog you want to hide
@@ -19,13 +19,14 @@ class MyHelpCommand(HelpCommand):
 
         for cog, commands in mapping.items():
             if cog is not None and cog.qualified_name not in cogs_to_hide:
-                command_signatures = [f"**``{prefix}{command.name}``**: {command.short_doc}" for command in commands if
-                                      command.short_doc]
+                command_signatures = [
+                    f"**``{prefix}{command.name}``**: {command.short_doc}"
+                    for command in commands
+                    if command.short_doc
+                ]
                 cog_name = cog.qualified_name
                 embed.add_field(
-                    name=cog_name,
-                    value="\n".join(command_signatures),
-                    inline=False
+                    name=cog_name, value="\n".join(command_signatures), inline=False
                 )
         await self.get_destination().send(embed=embed)
 
@@ -35,6 +36,6 @@ class MyHelpCommand(HelpCommand):
         embed = discord.Embed(
             title=f"Help for `{command_signature}`",
             description=command.help,
-            color=discord.Color.blue()
+            color=discord.Color.blue(),
         )
         await self.get_destination().send(embed=embed)

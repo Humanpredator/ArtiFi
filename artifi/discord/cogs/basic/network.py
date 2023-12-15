@@ -10,7 +10,6 @@ from artifi.utils.func import speed_convert
 
 
 class NetworkTest(Cog):
-
     def __init__(self, bot):
         self._bot: Discord = bot
 

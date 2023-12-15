@@ -9,23 +9,19 @@ class CloudFlareAi(CloudFlare):
 
     def text_generation(self, chat_uid: str, msg: str, model="meta_fp") -> str:
         if not self._chat_data.get(chat_uid):
-            self._chat_data[chat_uid] = {"messages": [
-                {
-                    "role": "user",
-                    "content": msg.strip()
-                }
-            ]}
+            self._chat_data[chat_uid] = {
+                "messages": [{"role": "user", "content": msg.strip()}]
+            }
         else:
-            self._chat_data[chat_uid]['messages'].append({
-                "role": "user",
-                "content": msg.strip()
-            })
+            self._chat_data[chat_uid]["messages"].append(
+                {"role": "user", "content": msg.strip()}
+            )
         url = f"{self._base_url}/{self.service}/{self.version}/accounts/{self.account_id}/ai/run/{self._textmodels(model)}"
 
         response = self._request.post(url, json=self._chat_data[chat_uid], timeout=30)
         response.raise_for_status()
         data = response.json()
-        msg = data['result']['response']
+        msg = data["result"]["response"]
         return msg
 
     @staticmethod

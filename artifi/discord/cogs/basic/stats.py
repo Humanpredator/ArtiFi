@@ -10,7 +10,7 @@ from discord.ext.commands import Cog, command
 
 from artifi.discord import Discord, send_message
 from artifi.discord.misc.custom_function import edit_message
-from artifi.utils.func import readable_time, readable_size
+from artifi.utils.func import readable_size, readable_time
 
 
 class Stats(Cog):
@@ -68,8 +68,8 @@ Total Upload: ***{sent}***
 Total Download: ***{recv}***
 """
         emd.add_field(name="Up Time", value=f"***{current_time}***")
-        emd.add_field(name='OS', value=os_data)
-        emd.add_field(name='CPU', value=cpu_data)
+        emd.add_field(name="OS", value=os_data)
+        emd.add_field(name="CPU", value=cpu_data)
 
         emd.add_field(name="Disk Space", value=disk_space)
         emd.add_field(name="Ram Space", value=ram)

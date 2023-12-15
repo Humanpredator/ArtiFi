@@ -1,4 +1,4 @@
-from sqlalchemy import Column, INTEGER, VARCHAR, TIMESTAMP, ForeignKey
+from sqlalchemy import INTEGER, TIMESTAMP, VARCHAR, Column, ForeignKey
 from sqlalchemy.orm import relationship
 
 from artifi import Artifi
@@ -19,7 +19,6 @@ class WaProfileModel(Artifi.dbmodel):
 
 
 class WaMessageModel(Artifi.dbmodel):
-
     def __init__(self, context):
         self.context: Artifi = context
 
@@ -38,5 +37,7 @@ class WaMessageModel(Artifi.dbmodel):
     wa_msg_updated = Column(TIMESTAMP())
 
     # relationship
-    wa_profile_pid = Column(INTEGER(), ForeignKey('wa_profile.wa_profile_pid', ondelete='SET NULL'))
+    wa_profile_pid = Column(
+        INTEGER(), ForeignKey("wa_profile.wa_profile_pid", ondelete="SET NULL")
+    )
     wa_profile_pid_fk = relationship("WaProfileModel", foreign_keys=[wa_profile_pid])

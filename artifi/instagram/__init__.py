@@ -6,7 +6,14 @@ from pathlib import Path
 from platform import system
 from sqlite3 import OperationalError, connect
 
-from instaloader import Instaloader, Profile, Post, StoryItem, Highlight, InstaloaderContext
+from instaloader import (
+    Highlight,
+    Instaloader,
+    InstaloaderContext,
+    Post,
+    Profile,
+    StoryItem,
+)
 
 from artifi import Artifi
 from artifi.instagram.misc.custom_func import CustomContext
@@ -22,7 +29,9 @@ class Instagram(Instaloader):
         self.compress_json: bool = False
         self._ig_username: str = ig_username
         self._ig_password: str = ig_password
-        self._session_file: str = os.path.join(self.acontext.cwd, f"{ig_username}_ig.session")
+        self._session_file: str = os.path.join(
+            self.acontext.cwd, f"{ig_username}_ig.session"
+        )
         self._status: bool = self._insta_session()
 
     @staticmethod
@@ -42,10 +51,14 @@ class Instagram(Instaloader):
             conn = connect(f"file:{cookie_path}?immutable=1", uri=True)
 
             try:
-                cursor = conn.execute("SELECT name, value FROM moz_cookies WHERE baseDomain='instagram.com'")
+                cursor = conn.execute(
+                    "SELECT name, value FROM moz_cookies WHERE baseDomain='instagram.com'"
+                )
                 cookie_data = cursor.fetchall()
             except OperationalError:
-                cursor = conn.execute("SELECT name, value FROM moz_cookies WHERE host LIKE '%instagram.com'")
+                cursor = conn.execute(
+                    "SELECT name, value FROM moz_cookies WHERE host LIKE '%instagram.com'"
+                )
                 cookie_data = cursor.fetchall()
 
             with open(self._session_file, "wb") as file:
@@ -82,18 +95,20 @@ class Instagram(Instaloader):
 
     @staticmethod
     def sanitize(string) -> str:
-        forbidden_chars_windows = {'<', '>', ':', '"', '/', '\\', '|', '?', '*'}
-        forbidden_chars_linux = {'/'}
-        if os.name == 'nt':
+        forbidden_chars_windows = {"<", ">", ":", '"', "/", "\\", "|", "?", "*"}
+        forbidden_chars_linux = {"/"}
+        if os.name == "nt":
             forbidden_chars = forbidden_chars_windows
         else:
             forbidden_chars = forbidden_chars_linux
-        sanitize_string = ''.join(char for char in string if char not in forbidden_chars)
+        sanitize_string = "".join(
+            char for char in string if char not in forbidden_chars
+        )
         return sanitize_string
 
     def download_posts(self, user_name) -> None:
         profile: Profile = Profile.from_username(self.context, user_name.strip())
-        post_path = os.path.join(self.acontext.directory, str(profile.userid), 'Posts')
+        post_path = os.path.join(self.acontext.directory, str(profile.userid), "Posts")
         os.makedirs(post_path, exist_ok=True)
         user_posts = profile.get_posts()
         for post in user_posts:
@@ -104,7 +119,9 @@ class Instagram(Instaloader):
 
     def download_album(self, user_name) -> None:
         profile: Profile = Profile.from_username(self.context, user_name.strip())
-        highlight_path = os.path.join(self.acontext.directory, str(profile.userid), 'Highlights')
+        highlight_path = os.path.join(
+            self.acontext.directory, str(profile.userid), "Highlights"
+        )
         os.makedirs(highlight_path, exist_ok=True)
         for user_highlight in self.get_highlights(profile):
             user_highlight: Highlight = user_highlight
@@ -113,7 +130,9 @@ class Instagram(Instaloader):
             os.makedirs(album_path, exist_ok=True)
             try:
                 for index, highlights in enumerate(user_highlight.get_items()):
-                    self.filename_pattern = self.file_name(profile.full_name, highlights)
+                    self.filename_pattern = self.file_name(
+                        profile.full_name, highlights
+                    )
                     time.sleep(2)
                     self.download_storyitem(highlights, target=Path(album_path))
                 self.acontext.logger.info(f"{album_name} Was Downloaded...!")
