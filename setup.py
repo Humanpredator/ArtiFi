@@ -16,7 +16,6 @@ setup(
         "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
         "Programming Language :: Python :: 3.10",
     ],
-
     python_requires=">=3.10",
     install_requires=[
         "aiofiles==23.2.1",
