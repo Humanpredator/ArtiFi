@@ -1,1 +1,1 @@
-from . import gcontact
+from . import people

@@ -14,7 +14,7 @@ class BaseConfig:
         if not self._env_path:
             self._env_path = os.path.join(self.get_root_path(), "config.env")
         if (file_state := os.path.exists(self._env_path)) and not load_dotenv(
-            self._env_path
+                self._env_path
         ):
             raise ConfigFileError("Failed to Load Config.env File")
         """Basic Config"""
@@ -37,7 +37,8 @@ class BaseConfig:
         self.WHATSAPP_TOKEN = os.getenv("WHATSAPP_TOKEN")
         self.WHATSAPP_WEBHOOK_SECRET = os.getenv("WHATSAPP_WEBHOOK_SECRET")
         self.WHATSAPP_NUMBER_ID = os.getenv("WHATSAPP_NUMBER_ID")
-
+        """Google Config"""
+        self.CHROMEDRIVE_PATH = os.getenv("CHROMEDRIVE_PATH")
         if not file_state:
             self._generate_config_file()
             raise Exception(

@@ -25,7 +25,7 @@ def readable_time(seconds: int) -> str:
 
 
 def readable_size(size_in_bytes) -> str:
-    SIZE_UNITS = ["B", "KB", "MB", "GB", "TB", "PB"]
+    units = ["B", "KB", "MB", "GB", "TB", "PB"]
 
     if size_in_bytes is None:
         return "0B"
@@ -34,7 +34,7 @@ def readable_size(size_in_bytes) -> str:
         size_in_bytes /= 1024
         index += 1
     try:
-        return f"{round(size_in_bytes, 2)}{SIZE_UNITS[index]}"
+        return f"{round(size_in_bytes, 2)}{units[index]}"
     except IndexError:
         return "File too large"
 
@@ -46,7 +46,7 @@ def file_type(file_path: Path):
 
 def speed_convert(size):
     """Hi human, you can't read bytes?"""
-    power = 2**10
+    power = 2 ** 10
     zero = 0
     units = {0: "", 1: "Kb/s", 2: "MB/s", 3: "Gb/s", 4: "Tb/s"}
     while size > power:

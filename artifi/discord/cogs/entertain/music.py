@@ -7,7 +7,7 @@ from discord import ButtonStyle, Embed, GroupChannel, Message, NotFound
 from discord.ext import tasks
 from discord.ext.commands import Cog, Context, command
 from discord.ui import View, button
-from wavelink.ext import spotify
+from wavelink import AutoPlayMode, player
 
 from artifi.discord import Discord
 from artifi.discord.misc.custom_function import (
@@ -21,7 +21,8 @@ class PlayerControl(View):
     def __init__(self, bot, voice_client=None, channel=None, message=None):
         super().__init__()
         self._bot: Discord = bot
-        self.voice_client: wavelink.player = voice_client
+        self.voice_client: player = voice_client
+
         self.channel: GroupChannel = channel
         self.message: Message = message
         self.update_status_task.start()
@@ -31,9 +32,9 @@ class PlayerControl(View):
         )
 
     def _vc_status(self):
-        if self.voice_client.is_paused():
+        if self.voice_client.paused:
             return "Paused"
-        elif self.voice_client.is_playing():
+        elif self.voice_client.playing:
             return "Playing"
         else:
             return "Stopped"
@@ -47,8 +48,8 @@ class PlayerControl(View):
     @tasks.loop(seconds=5)
     async def update_status_task(self, _delete=None):
         if (
-            not (message := await self.verify_message())
-            or not self.voice_client.is_connected()
+                not (message := await self.verify_message())
+                or not self.voice_client.connected
         ):
             self._bot.context.logger.info(
                 f"{self._control_id}: Music player Status Updating Task Disposed...!"
@@ -59,7 +60,7 @@ class PlayerControl(View):
         elif current_track := self.voice_client.current:
             embed = Embed(title="Player Control", timestamp=datetime.datetime.now())
             current_time = datetime.timedelta(milliseconds=self.voice_client.position)
-            total_time = datetime.timedelta(milliseconds=current_track.duration)
+            total_time = datetime.timedelta(milliseconds=current_track.length)
             current_time_str = str(current_time).split(".")[0]
             total_time_str = str(total_time).split(".")[0]
             embed.add_field(
@@ -79,10 +80,10 @@ class PlayerControl(View):
         interaction = args[0]
         if not self._bot.sudo_only(interaction.user.id):
             return await interaction.response.defer()
-        if self.voice_client.is_paused():
-            await self.voice_client.resume()
+        if self.voice_client.paused:
+            await self.voice_client.pause(False)
         else:
-            await self.voice_client.pause()
+            await self.voice_client.pause(True)
         await self.update_status_task()
         return await interaction.response.defer()
 
@@ -91,9 +92,8 @@ class PlayerControl(View):
         interaction = args[0]
         if not self._bot.sudo_only(interaction.user.id):
             return await interaction.response.defer()
-        if not self.voice_client.queue.is_empty:
-            next_track = self.voice_client.queue.get()
-            await self.voice_client.play(next_track)
+        next_track = self.voice_client.queue.get()
+        await self.voice_client.play(next_track)
         await self.update_status_task()
         return await interaction.response.defer()
 
@@ -102,12 +102,11 @@ class PlayerControl(View):
         interaction = args[0]
         if not self._bot.sudo_only(interaction.user.id):
             return await interaction.response.defer()
+        await self.update_status_task(_delete=2)
+        await self.voice_client.stop()
+        self.voice_client.queue.clear()
         if self.update_status_task.is_running():
             self.update_status_task.stop()
-        await self.voice_client.stop()
-
-        self.voice_client.queue.clear()
-        await self.update_status_task(_delete=2)
         await self.voice_client.disconnect()
         return await interaction.response.defer()
 
@@ -180,11 +179,11 @@ class Music(Cog):
         search_track = self.check_url_service(track_name_url)
 
         if search_track in ["YOUTUBE", "SEARCH"]:
-            tracks = await wavelink.YouTubeTrack.search(track_name_url)
+            tracks = await wavelink.Playable.search(track_name_url)
             if search_track == "SEARCH" and len(tracks) > 0:
                 tracks = [tracks[0]]
         elif search_track in ["SPOTIFY"]:
-            tracks = await spotify.SpotifyTrack.search(track_name_url)
+            tracks = await wavelink.Playable.search(track_name_url)
         else:
             return await edit_message(message, "Unable To Find The Song...!")
 
@@ -199,7 +198,7 @@ class Music(Cog):
         else:
             # noinspection PyTypeChecker
             voice_client = await ctx.author.voice.channel.connect(cls=wavelink.Player)
-            voice_client.autoplay = True
+            voice_client.autoplay = AutoPlayMode(0)
             await voice_client.set_volume(10)
             music_player = PlayerControl(
                 self._bot,
@@ -207,14 +206,13 @@ class Music(Cog):
                 channel=ctx.channel,
                 message=message,
             )
-
         for track in tracks:
             await music_player.voice_client.queue.put_wait(track)
             if (
-                not music_player.voice_client.is_playing()
-                and not music_player.voice_client.is_paused()
+                    not music_player.voice_client.playing
+                    and not music_player.voice_client.paused
             ):
-                await music_player.voice_client.play(track, populate=True)
+                await music_player.voice_client.play(track, add_history=True)
 
         self.music_player[ctx.guild.id] = music_player
         await music_player.update_status_task()

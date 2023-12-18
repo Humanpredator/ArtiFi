@@ -6,10 +6,11 @@ from artifi import Artifi
 from artifi.google import Google
 
 
-class GoogleContact(Google):
-    def __init__(self, context):
+class GooglePeople(Google):
+    def __init__(self, context, scope):
         super().__init__(context)
         self.context: Artifi = context
+        self._creds = self.oauth_creds(scope)
         self._service = build("people", "v1", credentials=self._creds)
 
     def get_contacts(self) -> Generator:
