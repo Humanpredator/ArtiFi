@@ -76,7 +76,7 @@ class Discord(Bot):
                 client=self, nodes=[self.wave_link_node]
             )
             self.context.logger.info(f"WaveLink Status: {wave_link_status}")
-        self.context.logger.info(f"Discord Bot Online...!")
+        self.context.logger.info("Discord Bot Online...!")
 
     def run_bot(self):
         self.add_listener(self._load_default, "on_ready")

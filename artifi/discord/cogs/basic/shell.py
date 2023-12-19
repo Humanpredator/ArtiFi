@@ -45,18 +45,14 @@ class Shell(Cog):
                             f"**** Execution Failed ****\n{stderr}\n\n**** Execution Success ****\n{stdout}"
                         )
                     content += "Output is too long, saved to a file."
-                    file = os.path.join(
-                        self._bot.context.directory, "shell_out.txt"
-                    )
+                    file = os.path.join(self._bot.context.directory, "shell_out.txt")
                 else:
                     if stdout:
                         content += f"```<---Execution Succeed--->\n\n{stdout}```"
                     if stderr:
                         content += f"```<---Execution Failed--->\n\n{stdout}```"
             else:
-                content += (
-                    f"***Unknown Status***\nExecution May Passed Or Failed..!"
-                )
+                content += "***Unknown Status***\nExecution May Passed Or Failed..!"
         except Exception as e:
             content += f"***Unable To Execute The Command***\n{str(e)}"
         finally:
