@@ -34,10 +34,9 @@ class PlayerControl(View):
     def _vc_status(self):
         if self.voice_client.paused:
             return "Paused"
-        elif self.voice_client.playing:
+        if self.voice_client.playing:
             return "Playing"
-        else:
-            return "Stopped"
+        return "Stopped"
 
     async def verify_message(self):
         try:
@@ -57,7 +56,7 @@ class PlayerControl(View):
             if self.update_status_task.is_running():
                 self.update_status_task.stop()
             return True
-        elif current_track := self.voice_client.current:
+        if current_track := self.voice_client.current:
             embed = Embed(title="Player Control", timestamp=datetime.datetime.now())
             current_time = datetime.timedelta(milliseconds=self.voice_client.position)
             total_time = datetime.timedelta(milliseconds=current_track.length)
@@ -149,10 +148,9 @@ class Music(Cog):
         if self.is_url(url):
             if re.match(spotify_pattern, url):
                 return "SPOTIFY"
-            elif re.match(youtube_pattern, url):
+            if re.match(youtube_pattern, url):
                 return "YOUTUBE"
-            else:
-                return "OTHERURL"
+            return "OTHERURL"
         else:
             return "SEARCH"
 

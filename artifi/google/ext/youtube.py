@@ -14,7 +14,7 @@ def _get_nested_key(d: Union[dict, List[dict]], key: str, default="UNKNOWN") -> 
         for k, v in d.items():
             if k == key:
                 return v
-            elif isinstance(v, (dict, list)):
+            if isinstance(v, (dict, list)):
                 result = _get_nested_key(v, key)
                 if result is not None:
                     return result

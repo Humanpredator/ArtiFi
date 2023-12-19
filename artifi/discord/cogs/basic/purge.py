@@ -11,12 +11,11 @@ class Purge(Cog):
     async def purge_messages(self, ctx: Context, *args):
         if not self._bot.owner_only(ctx):
             return await send_message(ctx, "Access Denied...!")
-        elif not args:
+        if not args:
             return await send_message(ctx, "Amount is Required..!")
-        else:
-            count = args[0]
-            await send_message(ctx, f"Purging {count} Messages")
-            await ctx.channel.purge(limit=int(count) + 1)
+        count = args[0]
+        await send_message(ctx, f"Purging {count} Messages")
+        await ctx.channel.purge(limit=int(count) + 1)
 
 
 async def setup(bot):
