@@ -55,7 +55,7 @@ class Shell(Cog):
                         content += f"```<---Execution Failed--->\n\n{stdout}```"
             else:
                 content += (
-                    f"***Unknown Status***\nExecution May Passed Or Failed..!"
+                    "***Unknown Status***\nExecution May Passed Or Failed..!"
                 )
         except Exception as e:
             content += f"***Unable To Execute The Command***\n{str(e)}"

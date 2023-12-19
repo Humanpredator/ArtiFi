@@ -125,7 +125,7 @@ class GoogleWebSession(Google):
                 self.context.logger.info("Login Successfully...!")
 
             browser_context.storage_state = session_data
-            self.context.logger.info(f"Almost There Just Validating Session...!")
+            self.context.logger.info("Almost There Just Validating Session...!")
             page.wait_for_timeout(10000)
             self._channel_id = page.url.split('/')[-1]
             browser_context.close()
