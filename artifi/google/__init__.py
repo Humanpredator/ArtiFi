@@ -74,15 +74,13 @@ class GoogleWebSession(Google):
         return "; ".join(set(cookie_field)), sapid_value
 
     def _load_session(self):
-        with suppress(Exception):
-            with open(self._session_path, "r") as f:
-                return json.load(f)
+        with suppress(Exception), open(self._session_path, "r") as f:
+            return json.load(f)
         return None
 
     def _save_session(self, data):
-        with suppress(Exception):
-            with open(self._session_path, "w") as f:
-                json.dump(data, f)
+        with suppress(Exception), open(self._session_path, "w") as f:
+            json.dump(data, f)
 
     @staticmethod
     async def _sapisid_hash(sapisid):
