@@ -7,9 +7,7 @@ import wavelink
 from discord.ext.commands import Bot, Context
 
 from artifi import Artifi
-from artifi.discord.misc import custom_command, custom_function, discord_model
 from artifi.discord.misc.custom_command import MyHelpCommand
-from artifi.discord.misc.custom_function import send_message
 from artifi.discord.misc.discord_model import DiscordSudoModel
 
 
