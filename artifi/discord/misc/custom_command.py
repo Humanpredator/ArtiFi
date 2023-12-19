@@ -14,11 +14,8 @@ class MyHelpCommand(HelpCommand):
             color=discord.Color.blue(),
         )
 
-        # Specify the cog you want to hide
-        cogs_to_hide = ["Greeting", "ErrorHandler"]
-
         for cog, commands in mapping.items():
-            if cog is not None and cog.qualified_name not in cogs_to_hide:
+            if not cog:
                 command_signatures = [
                     f"**``{prefix}{command.name}``**: {command.short_doc}"
                     for command in commands

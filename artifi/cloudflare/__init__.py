@@ -14,7 +14,7 @@ class CloudFlare:
         self._chat_data: dict = {}
 
     @property
-    def _request(self) -> Session:
+    def _cfrequest(self) -> Session:
         _session = Session()
         _session.headers = {
             "Content-Type": "application/json",
