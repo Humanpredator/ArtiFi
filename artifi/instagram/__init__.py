@@ -94,7 +94,7 @@ class Instagram(Instaloader):
         return file_pattern
 
     @staticmethod
-    def sanitize(string) -> str:
+    def sanitize_folder_name(string) -> str:
         forbidden_chars_windows = {"<", ">", ":", '"', "/", "\\", "|", "?", "*"}
         forbidden_chars_linux = {"/"}
         if os.name == "nt":
@@ -126,7 +126,7 @@ class Instagram(Instaloader):
         for user_highlight in self.get_highlights(profile):
             user_highlight: Highlight = user_highlight
             album_name = str(user_highlight.title)
-            album_path = os.path.join(highlight_path, self.sanitize(album_name))
+            album_path = os.path.join(highlight_path, self.sanitize_folder_name(album_name))
             os.makedirs(album_path, exist_ok=True)
             try:
                 for index, highlights in enumerate(user_highlight.get_items()):

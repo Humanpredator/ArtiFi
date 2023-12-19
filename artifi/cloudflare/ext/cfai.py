@@ -1,3 +1,5 @@
+import os
+
 from artifi import Artifi
 from artifi.cloudflare import CloudFlare
 
@@ -23,6 +25,27 @@ class CloudFlareAi(CloudFlare):
         data = response.json()
         msg = data["result"]["response"]
         return msg
+
+    def image_generation(self, prompt: str, path: str = None, model="sd_xl") -> str:
+
+        if not path:
+            path = self.context.directory
+        payload = {
+            "prompt": prompt.strip()
+        }
+        url = f"{self._base_url}/{self.service}/{self.version}/accounts/{self.account_id}/ai/run/{self._t2imodels(model)}"
+        self.context.logger.info("Image Generation Is In Progress...")
+        response = self._cfrequest.post(url, json=payload, timeout=30)
+        response.raise_for_status()
+        content_type = response.headers.get('Content-Type').split('/')
+        file_path = os.path.join(path, f"{prompt[:5] if len(prompt) > 5 else prompt}.{content_type[1]}")
+        match content_type[0]:
+            case "image":
+                with open(file_path, 'wb') as byte:
+                    byte.write(response.content)
+            case _:
+                raise Exception("Something Went Wrong...!")
+        return file_path
 
     @staticmethod
     def _textmodels(model_name) -> str:
