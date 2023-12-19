@@ -151,8 +151,7 @@ class Music(Cog):
             if re.match(youtube_pattern, url):
                 return "YOUTUBE"
             return "OTHERURL"
-        else:
-            return "SEARCH"
+        return "SEARCH"
 
     @command(
         "play", help="Send YT URL or Spotify URL or Track Name Followed By Command."
