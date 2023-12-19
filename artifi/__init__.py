@@ -14,7 +14,6 @@ from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session, declarative_base, sessionmaker
 
 from .config import BaseConfig
-from .config.exception import ArtifiException
 from .config.logger import LogConfig
 
 

@@ -7,20 +7,18 @@ import wavelink
 from discord.ext.commands import Bot, Context
 
 from artifi import Artifi
-from artifi.discord.misc import custom_command, custom_function, discord_model
 from artifi.discord.misc.custom_command import MyHelpCommand
-from artifi.discord.misc.custom_function import send_message
 from artifi.discord.misc.discord_model import DiscordSudoModel
 
 
 class Discord(Bot):
     def __init__(
-            self,
-            context,
-            command_prefix="!",
-            *,
-            intents=discord.Intents.all(),
-            **options: Any,
+        self,
+        context,
+        command_prefix="!",
+        *,
+        intents=discord.Intents.all(),
+        **options: Any,
     ):
         super().__init__(command_prefix, intents=intents, **options)
         self.bot_start_time = time.time()
@@ -75,7 +73,8 @@ class Discord(Bot):
                 password=self.context.DISCORD_LAVALINK_PASSWORD,
             )
             wave_link_status = await wavelink.Pool.connect(
-                client=self, nodes=[self.wave_link_node])
+                client=self, nodes=[self.wave_link_node]
+            )
             self.context.logger.info(f"WaveLink Status: {wave_link_status}")
         self.context.logger.info(f"Discord Bot Online...!")
 
