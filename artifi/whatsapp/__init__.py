@@ -141,7 +141,7 @@ class WhatsApp:
                             session.commit()
             return jsonify("Request Processed Successfully...!"), 200
 
-        elif request.method == "GET":
+        if request.method == "GET":
             mode = request.args.get("hub.mode")
             token = request.args.get("hub.verify_token")
             challenge = request.args.get("hub.challenge")
@@ -151,8 +151,7 @@ class WhatsApp:
                     and token == self.context.WHATSAPP_WEBHOOK_SECRET
                 ):
                     return challenge, 200
-                else:
-                    return jsonify("Unauthorized"), 403
+                return jsonify("Unauthorized"), 403
         return jsonify("Unable To Process Request"), 400
 
     @property

@@ -17,51 +17,50 @@ class Shell(Cog):
     async def shell_discord(self, ctx, *args):
         if not self._bot.owner_only(ctx):
             return await send_message(ctx, "Access Denied...!")
-        elif not args:
+        if not args:
             return await send_message(ctx, "Usage: !shell <command>")
-        else:
-            cmd = " ".join(args)
-            msg = await send_message(ctx, "Running the command...")
-            content = "**Shell Out**\n"
-            file = None
-            try:
-                process = subprocess.Popen(
-                    cmd,
-                    stdout=subprocess.PIPE,
-                    stderr=subprocess.PIPE,
-                    shell=True,
-                    encoding="UTF-8",
-                    errors="ignore",
-                )
-                stdout, stderr = process.communicate()
+        cmd = " ".join(args)
+        msg = await send_message(ctx, "Running the command...")
+        content = "**Shell Out**\n"
+        file = None
+        try:
+            process = subprocess.Popen(
+                cmd,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                shell=True,
+                encoding="UTF-8",
+                errors="ignore",
+            )
+            stdout, stderr = process.communicate()
 
-                if stdout or stderr:
-                    if len(stdout) + len(stderr) > 2000:
-                        # Output is too long, save it to a file
-                        with open(
-                            os.path.join(self._bot.context.directory, "shell_out.txt"),
-                            "w",
-                        ) as f:
-                            f.write(
-                                f"**** Execution Failed ****\n{stderr}\n\n**** Execution Success ****\n{stdout}"
-                            )
-                        content += "Output is too long, saved to a file."
-                        file = os.path.join(
-                            self._bot.context.directory, "shell_out.txt"
+            if stdout or stderr:
+                if len(stdout) + len(stderr) > 2000:
+                    # Output is too long, save it to a file
+                    with open(
+                        os.path.join(self._bot.context.directory, "shell_out.txt"),
+                        "w",
+                    ) as f:
+                        f.write(
+                            f"**** Execution Failed ****\n{stderr}\n\n**** Execution Success ****\n{stdout}"
                         )
-                    else:
-                        if stdout:
-                            content += f"```<---Execution Succeed--->\n\n{stdout}```"
-                        if stderr:
-                            content += f"```<---Execution Failed--->\n\n{stdout}```"
-                else:
-                    content += (
-                        f"***Unknown Status***\nExecution May Passed Or Failed..!"
+                    content += "Output is too long, saved to a file."
+                    file = os.path.join(
+                        self._bot.context.directory, "shell_out.txt"
                     )
-            except Exception as e:
-                content += f"***Unable To Execute The Command***\n{str(e)}"
-            finally:
-                await edit_message(msg, content, files=file)
+                else:
+                    if stdout:
+                        content += f"```<---Execution Succeed--->\n\n{stdout}```"
+                    if stderr:
+                        content += f"```<---Execution Failed--->\n\n{stdout}```"
+            else:
+                content += (
+                    f"***Unknown Status***\nExecution May Passed Or Failed..!"
+                )
+        except Exception as e:
+            content += f"***Unable To Execute The Command***\n{str(e)}"
+        finally:
+            await edit_message(msg, content, files=file)
 
 
 async def setup(bot):

@@ -48,12 +48,11 @@ class Discord(Bot):
                 author_id in self.get_all_users()
                 or author_id == self.context.DISCORD_OWNER_ID
             )
-        elif isinstance(ctx, int):
+        if isinstance(ctx, int):
             return bool(
                 ctx in self.get_all_users() or ctx == self.context.DISCORD_OWNER_ID
             )
-        else:
-            return bool(0)
+        return bool(0)
 
     async def _load_default(self) -> None:
         if self.load_default:
