@@ -64,6 +64,11 @@ class CloudFlareAi(CloudFlare):
 
     @staticmethod
     def _textmodels(model_name) -> str:
+        """
+
+        @param model_name:
+        @return:
+        """
         text_models = {
             "meta_fp": "@cf/meta/llama-2-7b-chat-fp16",
             "meta_q": "@cf/meta/llama-2-7b-chat-int8",
@@ -74,6 +79,11 @@ class CloudFlareAi(CloudFlare):
 
     @staticmethod
     def _t2imodels(model_name) -> str:
+        """
+
+        @param model_name:
+        @return:
+        """
         t2i_models = {
             "sd_xl": "@cf/stabilityai/stable-diffusion-xl-base-1.0",
         }

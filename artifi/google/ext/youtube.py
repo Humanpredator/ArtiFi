@@ -14,6 +14,10 @@ class StudioVideoObj:
     """Video Details"""
 
     def __init__(self, video: dict):
+        """
+
+        @param video:
+        """
         self._video = video
         self._video_id: Optional[str] = None
         self._channel_id: Optional[str] = None
@@ -30,6 +34,12 @@ class StudioVideoObj:
         self.__call__()
 
     def __call__(self, *args, **kwargs):
+        """
+
+        @param args:
+        @param kwargs:
+        @return:
+        """
         if self._video:
             self._video_id = self._video.get("videoId")
             self._channel_id = self._video.get("channelId")
@@ -57,6 +67,11 @@ class StudioVideoObj:
 
     @staticmethod
     def _restriction_state(option: str):
+        """
+
+        @param option:
+        @return:
+        """
         mapping = {
             "VIDEO_RESTRICTION_REASON_COPYRIGHT": "COPYRIGHT",
         }
@@ -65,6 +80,11 @@ class StudioVideoObj:
 
     @staticmethod
     def _edit_processing_state(option: str):
+        """
+
+        @param option:
+        @return:
+        """
         mapping = {
             "VIDEO_PROCESSING_STATUS_EDITED": "EDITED",
             "VIDEO_PROCESSING_STATUS_UNEDITED": "UNEDITED",
@@ -75,6 +95,11 @@ class StudioVideoObj:
 
     @staticmethod
     def _video_state(option: str):
+        """
+
+        @param option:
+        @return:
+        """
         mapping = {
             "VIDEO_STATUS_UPLOADED": "UPLOADED_CHECKING",
             "VIDEO_STATUS_PROCESSED": "PROCESSED",
@@ -183,6 +208,10 @@ class StudioVideoClaimsObj:
     """Video Copyright Claims Details"""
 
     def __init__(self, claim: dict):
+        """
+
+        @param claim:
+        """
         self._claim = claim
         self._claim_id: Optional[str] = None
         self._video_id: Optional[str] = None
@@ -195,6 +224,12 @@ class StudioVideoClaimsObj:
         self.__call__()
 
     def __call__(self, *args, **kwargs):
+        """
+
+        @param args:
+        @param kwargs:
+        @return:
+        """
         self._claim_id = self._claim.get("claimId")
         self._video_id = self._claim.get("videoId")
         self._type = self._claim.get("type")
@@ -226,6 +261,11 @@ class StudioVideoClaimsObj:
 
     @staticmethod
     def _available_option(options: list):
+        """
+
+        @param options:
+        @return:
+        """
         mapping = {
             "NON_TAKEDOWN_CLAIM_OPTION_ERASE_SONG": "MUTE_SONG",
             "NON_TAKEDOWN_CLAIM_OPTION_TRIM": "TRIM_SEGMENT",
@@ -309,13 +349,13 @@ class GoogleYouTubeStudio(GoogleWebSession):
     """
 
     def __init__(
-        self,
-        context,
-        email: str,
-        password: str,
-        headless: bool = True,
-        param_key: str = "AIzaSyBUPetSUmoZL-OhlxA7wSac5XinrygCqMo",
-        user_agent: str = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36",
+            self,
+            context,
+            email: str,
+            password: str,
+            headless: bool = True,
+            param_key: str = "AIzaSyBUPetSUmoZL-OhlxA7wSac5XinrygCqMo",
+            user_agent: str = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36",
     ):
         """
 
@@ -349,12 +389,21 @@ class GoogleYouTubeStudio(GoogleWebSession):
         return f"{timestamp_ms}_{digest.hexdigest()}"
 
     def _intercept_response(self, response):
+        """
+
+        @param response:
+        @return:
+        """
         session_token_url = f"https://studio.youtube.com/youtubei/v1/ars/grst?alt=json&key={self.auth_key}"
         if session_token_url in response.url:
             data = response.json()
             self._session_token = data.get("sessionToken")
 
     def _default_header(self):
+        """
+
+        @return:
+        """
         required_cookie_field = [
             "__Secure-3PAPISID",
             "__Secure-3PSIDTS",
@@ -371,6 +420,10 @@ class GoogleYouTubeStudio(GoogleWebSession):
         return "; ".join(set(cookie_field)), sapid_value
 
     def _web_request(self) -> Session:
+        """
+
+        @return:
+        """
         cp_url = self.fetch_save_gsession(
             "https://studio.youtube.com/", self._intercept_response
         )
@@ -540,7 +593,7 @@ class GoogleYouTubeStudio(GoogleWebSession):
                 yield StudioVideoObj(video_data)
 
     def list_video_claims(
-        self, video: StudioVideoObj
+            self, video: StudioVideoObj
     ) -> Optional[Generator[StudioVideoClaimsObj, None, None]]:
         """
         Show list claims on videos

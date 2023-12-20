@@ -16,12 +16,12 @@ class Discord(Bot):
     """Discord Bot"""
 
     def __init__(
-        self,
-        context,
-        command_prefix="!",
-        *,
-        intents=discord.Intents.all(),
-        **options: Any,
+            self,
+            context,
+            command_prefix="!",
+            *,
+            intents=discord.Intents.all(),
+            **options: Any,
     ):
         """
 
@@ -75,6 +75,10 @@ class Discord(Bot):
         return bool(0)
 
     async def _load_default(self) -> None:
+        """
+
+        @return:
+        """
         if self.load_default:
             self.context.create_db_table([DiscordSudoModel])
             self.context.logger.info("Loading Default Cogs, Please Wait...!")
