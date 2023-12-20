@@ -46,7 +46,7 @@ class GoogleContactObj:
 
     def __init__(self, obj):
         """
-        
+
         @param obj:
         """
         self._contact_obj: Optional[dict] = obj
