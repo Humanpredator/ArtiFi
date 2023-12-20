@@ -447,7 +447,7 @@ class GoogleYouTubeStudio(GoogleWebSession):
             else:
                 all_set = False
             content_videos = data.get('videos', [])
-            for ids, video_data in enumerate(content_videos, start=1):
+            for video_data in content_videos:
                 yield StudioVideoObj(video_data)
 
     def list_video_claims(self, video: StudioVideoObj) -> Optional[Generator[StudioVideoClaimsObj, None, None]]:
@@ -494,7 +494,7 @@ class GoogleYouTubeStudio(GoogleWebSession):
             return self.list_video_claims(video)
         data = response.json().get('receivedClaims', [])
 
-        for ids, claim in enumerate(data, start=1):
+        for claim in data:
             yield StudioVideoClaimsObj(claim)
 
     def _get_claimed_duration(self, claim: StudioVideoClaimsObj):

@@ -8,8 +8,8 @@ from cpuinfo import cpuinfo
 from discord import Embed
 from discord.ext.commands import Cog, command
 
-from artifi.discord import Discord, send_message
-from artifi.discord.misc.custom_function import edit_message
+from artifi.discord import Discord
+from artifi.discord.misc.custom_function import edit_message, send_message
 from artifi.utils.func import readable_size, readable_time
 
 

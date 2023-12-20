@@ -3,8 +3,8 @@ import subprocess
 
 from discord.ext.commands import Cog, command
 
-from artifi.discord import Discord, send_message
-from artifi.discord.misc.custom_function import edit_message
+from artifi.discord import Discord
+from artifi.discord.misc.custom_function import edit_message, send_message
 
 
 class Shell(Cog):
@@ -38,8 +38,8 @@ class Shell(Cog):
                 if len(stdout) + len(stderr) > 2000:
                     # Output is too long, save it to a file
                     with open(
-                        os.path.join(self._bot.context.directory, "shell_out.txt"),
-                        "w",
+                            os.path.join(self._bot.context.directory, "shell_out.txt"),
+                            "w",
                     ) as f:
                         f.write(
                             f"**** Execution Failed ****\n{stderr}\n\n**** Execution Success ****\n{stdout}"
@@ -53,7 +53,7 @@ class Shell(Cog):
                         content += f"```<---Execution Failed--->\n\n{stdout}```"
             else:
                 content += "***Unknown Status***\nExecution May Passed Or Failed..!"
-        except Exception as e:
+        except subprocess.SubprocessError as e:
             content += f"***Unable To Execute The Command***\n{str(e)}"
         finally:
             await edit_message(msg, content, files=file)

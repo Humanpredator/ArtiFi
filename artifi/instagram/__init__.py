@@ -128,15 +128,11 @@ class Instagram(Instaloader):
             album_name = str(user_highlight.title)
             album_path = os.path.join(highlight_path, self.sanitize_folder_name(album_name))
             os.makedirs(album_path, exist_ok=True)
-            try:
-                for index, highlights in enumerate(user_highlight.get_items()):
-                    self.filename_pattern = self.file_name(
-                        profile.full_name, highlights
-                    )
-                    time.sleep(2)
-                    self.download_storyitem(highlights, target=Path(album_path))
-                self.acontext.logger.info(f"{album_name} Was Downloaded...!")
-            except Exception as e:
-                self.acontext.logger.error(f"Something Went Wrong: {e}")
-                time.sleep(10)
+            for highlights in user_highlight.get_items():
+                self.filename_pattern = self.file_name(
+                    profile.full_name, highlights
+                )
+                time.sleep(2)
+                self.download_storyitem(highlights, target=Path(album_path))
+            self.acontext.logger.info(f"{album_name} Was Downloaded...!")
         self.acontext.logger.info(f"{profile.full_name} Highlights Was Downloaded...!")

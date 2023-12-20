@@ -57,7 +57,7 @@ def speed_convert(size):
 
 def clean_cache():
     curr_path = os.getcwd()
-    for root, dirs, files in os.walk(curr_path):
+    for root, dirs, _ in os.walk(curr_path):
         for cache in dirs:
             if "__pycache__" in cache:
                 path = os.path.join(root, cache)
