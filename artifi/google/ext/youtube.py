@@ -343,13 +343,13 @@ class GoogleYouTubeStudio(GoogleWebSession):
     """
 
     def __init__(
-            self,
-            context,
-            email: str,
-            password: str,
-            headless: bool = True,
-            param_key: str = "AIzaSyBUPetSUmoZL-OhlxA7wSac5XinrygCqMo",
-            user_agent: str = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36",
+        self,
+        context,
+        email: str,
+        password: str,
+        headless: bool = True,
+        param_key: str = "AIzaSyBUPetSUmoZL-OhlxA7wSac5XinrygCqMo",
+        user_agent: str = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36",
     ):
         """
 
@@ -581,7 +581,7 @@ class GoogleYouTubeStudio(GoogleWebSession):
                 yield StudioVideoObj(video_data)
 
     def list_video_claims(
-            self, video: StudioVideoObj
+        self, video: StudioVideoObj
     ) -> Optional[Generator[StudioVideoClaimsObj, None, None]]:
         """
         Show list claims on videos
@@ -638,7 +638,7 @@ class GoogleYouTubeStudio(GoogleWebSession):
 
     def _get_claimed_duration(self, claim: StudioVideoClaimsObj):
         """
-        
+
         @param claim:
         @return:
         """

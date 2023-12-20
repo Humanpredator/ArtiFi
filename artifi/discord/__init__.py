@@ -16,12 +16,12 @@ class Discord(Bot):
     """Discord Bot"""
 
     def __init__(
-            self,
-            context,
-            command_prefix="!",
-            *,
-            intents=discord.Intents.all(),
-            **options: Any,
+        self,
+        context,
+        command_prefix="!",
+        *,
+        intents=discord.Intents.all(),
+        **options: Any,
     ):
         """
 
