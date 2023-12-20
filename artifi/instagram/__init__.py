@@ -27,6 +27,7 @@ class Instagram(Instaloader):
         self.download_video_thumbnails: bool = False
         self.save_metadata: bool = False
         self.compress_json: bool = False
+        self.filename_pattern = "{profile}_UTC_{date_utc}"
         self._ig_username: str = ig_username
         self._ig_password: str = ig_password
         self._session_file: str = os.path.join(
@@ -70,15 +71,11 @@ class Instagram(Instaloader):
         return cookie_path
 
     def _insta_session(self) -> bool:
-        try:
-            cookie = self._fetch_and_save_cookies()
-            if not cookie:
-                return bool(0)
-            self.load_session_from_file(self._ig_username, self._session_file)
-            return bool(self.test_login())
-        except:
-            self.acontext.logger.info("Unable to Login Using Session File")
+        cookie = self._fetch_and_save_cookies()
+        if not cookie:
             return bool(0)
+        self.load_session_from_file(self._ig_username, self._session_file)
+        return bool(self.test_login())
 
     @staticmethod
     def file_name(name: str, post: Post | StoryItem) -> str:

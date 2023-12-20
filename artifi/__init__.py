@@ -2,7 +2,7 @@ import logging
 import os
 import sys
 from datetime import datetime, timedelta
-from typing import Optional
+from typing import Optional, List
 
 import pytz
 from apscheduler.jobstores.memory import MemoryJobStore
@@ -30,13 +30,21 @@ class Artifi(BaseConfig):
         )
         self.cwd: str = self.get_root_path()
         self.directory: str = self._create_directory()
-        self.logger: logging = LogConfig(self).logger
+        self.logger: logging.Logger = LogConfig(self).logger
         self.db_engine: Engine = self._db_engine()
         self.fsapi: Flask = Flask(import_name)
 
-        sys.excepthook = lambda exctype, value, traceback: self.logger.error(
+        sys.excepthook = lambda exctype, value, traceback: self.logger.critical(
             f"{traceback} || {exctype.__name__} || {value}"
         )
+
+    def create_db_table(self, tables: List[dbmodel]):
+        if tables:
+            for table in tables:
+                table(self).__table__.create(
+                    self.db_engine, checkfirst=True
+                )
+        return True
 
     def _create_directory(self):
         working_directory = os.path.join(self.cwd, "Downloads")
@@ -47,7 +55,7 @@ class Artifi(BaseConfig):
         try:
             engine = create_engine(self.SQLALCHEMY_DATABASE_URI, echo=False)
         except SQLAlchemyError as e:
-            self.logger.info(f"Failed To Connect to DB, Existing...!\nReason: {e}")
+            self.logger.error(f"Failed To Connect to DB, Existing...!\nReason: {e}")
             raise SQLAlchemyError("Failed To Connect To DB")
         return engine
 
@@ -56,14 +64,14 @@ class Artifi(BaseConfig):
         return session_maker()
 
     def add_scheduler(
-        self,
-        function: func,
-        start_time: Optional[str] = None,
-        end_time: Optional[str] = None,
-        interval: Optional[int] = None,
-        start_date: Optional[str] = None,
-        end_date: Optional[str] = None,
-        allow_duplicate: bool = True,
+            self,
+            function: func,
+            start_time: Optional[str] = None,
+            end_time: Optional[str] = None,
+            interval: Optional[int] = None,
+            start_date: Optional[str] = None,
+            end_date: Optional[str] = None,
+            allow_duplicate: bool = True,
     ):
         defaults = {
             "start_date": datetime.now().strftime("%Y-%m-%d"),
@@ -75,8 +83,8 @@ class Artifi(BaseConfig):
         start_date, end_date, start_time, end_time, interval = (
             value if value is not None else defaults[key]
             for key, value in zip(
-                defaults.keys(), (start_date, end_date, start_time, end_time, interval)
-            )
+            defaults.keys(), (start_date, end_date, start_time, end_time, interval)
+        )
         )
         tz = pytz.timezone("asia/kolkata")
         start_datetime = tz.localize(
@@ -96,7 +104,7 @@ class Artifi(BaseConfig):
             replace_existing=allow_duplicate,
             jobstore=self.__class__.__name__,
         )
-        self.logger.info(
+        self.logger.debug(
             f"Function {function.__name__} was added to Scheduler with job ID: {job_id} ...!"
         )
 

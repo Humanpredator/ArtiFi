@@ -25,7 +25,7 @@ class BaseConfig:
         self.CLOUDFLARE_ACCOUNT_TOKEN = os.getenv("CLOUDFLARE_ACCOUNT_TOKEN")
         """Discord Config"""
         self.DISCORD_BOT_TOKEN = os.getenv("DISCORD_BOT_TOKEN")
-        self.DISCORD_OWNER_ID = int(os.getenv("DISCORD_OWNER_ID", 1))
+        self.DISCORD_OWNER_ID = int(os.getenv("DISCORD_OWNER_ID", "1"))
         self.DISCORD_SPOTIFY_CLIENT = os.getenv("DISCORD_SPOTIFY_CLIENT_ID")
         self.DISCORD_SPOTIFY_SECRET = os.getenv("DISCORD_SPOTIFY_CLIENT_SECRET")
         self.DISCORD_LAVALINK_URI = os.getenv("DISCORD_LAVALINK_URI")

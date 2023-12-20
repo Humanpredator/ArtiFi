@@ -1,6 +1,6 @@
 import os
 import time
-from typing import Any
+from typing import Any, Optional, List
 
 import discord
 import wavelink
@@ -13,22 +13,20 @@ from artifi.discord.misc.discord_model import DiscordSudoModel
 
 class Discord(Bot):
     def __init__(
-        self,
-        context,
-        command_prefix="!",
-        *,
-        intents=discord.Intents.all(),
-        **options: Any,
+            self,
+            context,
+            command_prefix="!",
+            *,
+            intents=discord.Intents.all(),
+            **options: Any,
     ):
         super().__init__(command_prefix, intents=intents, **options)
         self.bot_start_time = time.time()
         self.context: Artifi = context
         self.load_default = True
         self.help_command = MyHelpCommand()
-
-        DiscordSudoModel(self.context).__table__.create(
-            self.context.db_engine, checkfirst=True
-        )
+        self.db_tables: Optional[List[Artifi.dbmodel]] = None
+        self.context.create_db_table(self.db_tables)
 
     def get_all_users(self) -> list:
         with self.context.db_session() as session:
@@ -54,6 +52,7 @@ class Discord(Bot):
 
     async def _load_default(self) -> None:
         if self.load_default:
+            self.context.create_db_table([DiscordSudoModel])
             self.context.logger.info("Loading Default Cogs, Please Wait...!")
             cog_dir = os.path.join(self.context.module_path, "discord", "cogs")
             for root, _, files in os.walk(cog_dir):
@@ -68,12 +67,12 @@ class Discord(Bot):
                         cog_module = f"artifi.{cog_module}"
                         await self.load_extension(cog_module)
             self.context.logger.info("All Cogs Were Loaded..!")
-            self.wave_link_node: wavelink.Node = wavelink.Node(
+            wave_link_node: wavelink.Node = wavelink.Node(
                 uri=self.context.DISCORD_LAVALINK_URI,
                 password=self.context.DISCORD_LAVALINK_PASSWORD,
             )
             wave_link_status = await wavelink.Pool.connect(
-                client=self, nodes=[self.wave_link_node]
+                client=self, nodes=[wave_link_node]
             )
             self.context.logger.info(f"WaveLink Status: {wave_link_status}")
         self.context.logger.info("Discord Bot Online...!")

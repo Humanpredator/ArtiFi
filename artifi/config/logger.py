@@ -21,5 +21,5 @@ class LogConfig:
         self._logger = logging.getLogger(self.context.import_name)
 
     @property
-    def logger(self) -> logging:
+    def logger(self) -> logging.Logger:
         return self._logger
