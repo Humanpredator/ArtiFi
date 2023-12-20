@@ -7,13 +7,13 @@ from discord.ext.commands import Context
 
 
 async def send_message(
-        ctx: Union[Context, Member],
-        content: str = None,
-        embed: Embed = None,
-        files: str = None,
-        reply: bool = False,
-        markup=None,
-        delete: float = None,
+    ctx: Union[Context, Member],
+    content: str = None,
+    embed: Embed = None,
+    files: str = None,
+    reply: bool = False,
+    markup=None,
+    delete: float = None,
 ) -> Message | None:
     """
 
@@ -41,12 +41,12 @@ async def send_message(
 
 
 async def edit_message(
-        message: Message,
-        content: str = None,
-        embed: Embed = None,
-        files: str = None,
-        delete: float = None,
-        markup=None,
+    message: Message,
+    content: str = None,
+    embed: Embed = None,
+    files: str = None,
+    delete: float = None,
+    markup=None,
 ) -> Message | None:
     """
 
@@ -85,11 +85,11 @@ async def delete_message(message: Message, delay: float = None) -> None:
 
 
 async def send_files(
-        ctx: Context,
-        content: str = None,
-        files: str = None,
-        reply: bool = False,
-        delete: float = None,
+    ctx: Context,
+    content: str = None,
+    files: str = None,
+    reply: bool = False,
+    delete: float = None,
 ) -> Message | None:
     """
 

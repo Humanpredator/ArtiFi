@@ -2,8 +2,7 @@
 import asyncio
 import hashlib
 import time
-from typing import List
-from typing import Optional, Generator
+from typing import Generator, List, Optional
 
 from requests import Session
 
@@ -32,24 +31,27 @@ class StudioVideoObj:
 
     def __call__(self, *args, **kwargs):
         if self._video:
-            self._video_id = self._video.get('videoId')
-            self._channel_id = self._video.get('channelId')
-            self._video_title = self._video.get('title')
-            self._video_length = self._video.get('lengthSeconds')
-            self._description = self._video.get('description')
-            self._download_url = self._video.get('downloadUrl')
+            self._video_id = self._video.get("videoId")
+            self._channel_id = self._video.get("channelId")
+            self._video_title = self._video.get("title")
+            self._video_length = self._video.get("lengthSeconds")
+            self._description = self._video.get("description")
+            self._download_url = self._video.get("downloadUrl")
             self._restriction = self._restriction_state(
-                get_nested_key(self._video.get('allRestrictions'), 'reason'))
-            self._is_private = self._video.get('privacy') == 'VIDEO_PRIVACY_PRIVATE'
-            self._is_drafted = self._video.get('draftStatus') == 'DRAFT_STATUS_NONE'
+                get_nested_key(self._video.get("allRestrictions"), "reason")
+            )
+            self._is_private = self._video.get("privacy") == "VIDEO_PRIVACY_PRIVATE"
+            self._is_drafted = self._video.get("draftStatus") == "DRAFT_STATUS_NONE"
             self._insights = {
-                'total_comments': self._video.get('metrics').get('commentCount'),
-                'total_dislike': self._video.get('metrics').get('dislikeCount'),
-                'total_like': self._video.get('metrics').get('likeCount'),
-                'total_view': self._video.get('metrics').get('viewCount')
+                "total_comments": self._video.get("metrics").get("commentCount"),
+                "total_dislike": self._video.get("metrics").get("dislikeCount"),
+                "total_like": self._video.get("metrics").get("likeCount"),
+                "total_view": self._video.get("metrics").get("viewCount"),
             }
-            self._edit_processing_status = self._edit_processing_state(self._video.get('inlineEditProcessingStatus'))
-            self._video_status = self._video_state(self._video.get('status'))
+            self._edit_processing_status = self._edit_processing_state(
+                self._video.get("inlineEditProcessingStatus")
+            )
+            self._video_status = self._video_state(self._video.get("status"))
 
         return self
 
@@ -193,24 +195,32 @@ class StudioVideoClaimsObj:
         self.__call__()
 
     def __call__(self, *args, **kwargs):
-        self._claim_id = self._claim.get('claimId')
-        self._video_id = self._claim.get('videoId')
-        self._type = self._claim.get('type')
+        self._claim_id = self._claim.get("claimId")
+        self._video_id = self._claim.get("videoId")
+        self._type = self._claim.get("type")
 
-        start_time_seconds = int(self._claim.get("matchDetails", {}).get("longestMatchStartTimeSeconds", 0))
-        duration_seconds = int(self._claim.get("matchDetails", {}).get("longestMatchDurationSeconds", 0))
+        start_time_seconds = int(
+            self._claim.get("matchDetails", {}).get("longestMatchStartTimeSeconds", 0)
+        )
+        duration_seconds = int(
+            self._claim.get("matchDetails", {}).get("longestMatchDurationSeconds", 0)
+        )
         end_time_seconds = start_time_seconds + duration_seconds
 
         start_time_minutes, start_time_seconds = divmod(start_time_seconds, 60)
         end_time_minutes, end_time_seconds = divmod(end_time_seconds, 60)
         self._duration = f"{start_time_minutes:02d}:{start_time_seconds:02d} - {end_time_minutes:02d}:{end_time_seconds:02d}"
 
-        self._resolve_option = self._available_option(self._claim.get('nontakedownClaimActions', {}).get('options'))
+        self._resolve_option = self._available_option(
+            self._claim.get("nontakedownClaimActions", {}).get("options")
+        )
 
-        meta_data = self._claim.get('asset', {}).get('srMetadata') or self._claim.get('asset', {}).get('metadata', {})
-        self._claim_title = get_nested_key(meta_data, 'title')
-        self._status = self._claim.get('status')
-        self._artists = get_nested_key(meta_data, 'artists')
+        meta_data = self._claim.get("asset", {}).get("srMetadata") or self._claim.get(
+            "asset", {}
+        ).get("metadata", {})
+        self._claim_title = get_nested_key(meta_data, "title")
+        self._status = self._claim.get("status")
+        self._artists = get_nested_key(meta_data, "artists")
 
         return self
 
@@ -221,7 +231,11 @@ class StudioVideoClaimsObj:
             "NON_TAKEDOWN_CLAIM_OPTION_TRIM": "TRIM_SEGMENT",
         }
 
-        return [mapping.get(option, "UNAVAILABLE") for option in options if option in mapping] or ["UNAVAILABLE"]
+        return [
+            mapping.get(option, "UNAVAILABLE")
+            for option in options
+            if option in mapping
+        ] or ["UNAVAILABLE"]
 
     @property
     def claim_id(self) -> Optional[str]:
@@ -294,14 +308,17 @@ class GoogleYouTubeStudio(GoogleWebSession):
     Uses WebSession
     """
 
-    def __init__(self, context,
-                 email: str,
-                 password: str,
-                 headless: bool = True,
-                 param_key: str = "AIzaSyBUPetSUmoZL-OhlxA7wSac5XinrygCqMo",
-                 user_agent: str = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36'):
+    def __init__(
+        self,
+        context,
+        email: str,
+        password: str,
+        headless: bool = True,
+        param_key: str = "AIzaSyBUPetSUmoZL-OhlxA7wSac5XinrygCqMo",
+        user_agent: str = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36",
+    ):
         """
-        
+
         @param context: pass :class Artifi
         @param email: Google email address
         @param password: Google email password
@@ -354,8 +371,10 @@ class GoogleYouTubeStudio(GoogleWebSession):
         return "; ".join(set(cookie_field)), sapid_value
 
     def _web_request(self) -> Session:
-        cp_url = self.fetch_save_gsession("https://studio.youtube.com/", self._intercept_response)
-        self._channel_id = cp_url.split('/')[-1]
+        cp_url = self.fetch_save_gsession(
+            "https://studio.youtube.com/", self._intercept_response
+        )
+        self._channel_id = cp_url.split("/")[-1]
         default_session = Session()
         header_cookie, sapid_value = self._default_header()
         if not isinstance(header_cookie or sapid_value, str):
@@ -381,19 +400,11 @@ class GoogleYouTubeStudio(GoogleWebSession):
             "filter": {
                 "and": {
                     "operands": [
-                        {
-                            "channelIdIs": {
-                                "value": self._channel_id
-                            }
-                        },
+                        {"channelIdIs": {"value": self._channel_id}},
                         {
                             "and": {
                                 "operands": [
-                                    {
-                                        "videoOriginIs": {
-                                            "value": "VIDEO_ORIGIN_UPLOAD"
-                                        }
-                                    },
+                                    {"videoOriginIs": {"value": "VIDEO_ORIGIN_UPLOAD"}},
                                     {
                                         "not": {
                                             "operand": {
@@ -418,18 +429,18 @@ class GoogleYouTubeStudio(GoogleWebSession):
                                                                     },
                                                                     {
                                                                         "isShortsEligible": {}
-                                                                    }
+                                                                    },
                                                                 ]
                                                             }
-                                                        }
+                                                        },
                                                     ]
                                                 }
                                             }
                                         }
-                                    }
+                                    },
                                 ]
                             }
-                        }
+                        },
                     ]
                 }
             },
@@ -439,117 +450,53 @@ class GoogleYouTubeStudio(GoogleWebSession):
                 "channelId": True,
                 "videoId": True,
                 "lengthSeconds": True,
-                "livestream": {
-                    "all": True
-                },
-                "publicLivestream": {
-                    "all": True
-                },
+                "livestream": {"all": True},
+                "publicLivestream": {"all": True},
                 "origin": True,
-                "premiere": {
-                    "all": True
-                },
-                "publicPremiere": {
-                    "all": True
-                },
+                "premiere": {"all": True},
+                "publicPremiere": {"all": True},
                 "status": True,
-                "thumbnailDetails": {
-                    "all": True
-                },
+                "thumbnailDetails": {"all": True},
                 "title": True,
                 "draftStatus": True,
                 "downloadUrl": True,
                 "watchUrl": True,
                 "shareUrl": True,
-                "permissions": {
-                    "all": True
-                },
-                "features": {
-                    "all": True
-                },
+                "permissions": {"all": True},
+                "features": {"all": True},
                 "timeCreatedSeconds": True,
                 "timePublishedSeconds": True,
                 "privacy": True,
-                "contentOwnershipModelSettings": {
-                    "all": True
-                },
+                "contentOwnershipModelSettings": {"all": True},
                 "contentType": True,
-                "publicShorts": {
-                    "all": True
-                },
-                "podcastRssMetadata": {
-                    "all": True
-                },
-                "videoLinkageShortsAttribution": {
-                    "all": True
-                },
-                "responseStatus": {
-                    "all": True
-                },
-                "statusDetails": {
-                    "all": True
-                },
+                "publicShorts": {"all": True},
+                "podcastRssMetadata": {"all": True},
+                "videoLinkageShortsAttribution": {"all": True},
+                "responseStatus": {"all": True},
+                "statusDetails": {"all": True},
                 "description": True,
-                "metrics": {
-                    "all": True
-                },
-                "thumbnailEditorState": {
-                    "all": True
-                },
-                "titleFormattedString": {
-                    "all": True
-                },
-                "descriptionFormattedString": {
-                    "all": True
-                },
-                "titleDetails": {
-                    "all": True
-                },
-                "descriptionDetails": {
-                    "all": True
-                },
-                "audienceRestriction": {
-                    "all": True
-                },
-                "releaseInfo": {
-                    "all": True
-                },
-                "allRestrictions": {
-                    "all": True
-                },
+                "metrics": {"all": True},
+                "thumbnailEditorState": {"all": True},
+                "titleFormattedString": {"all": True},
+                "descriptionFormattedString": {"all": True},
+                "titleDetails": {"all": True},
+                "descriptionDetails": {"all": True},
+                "audienceRestriction": {"all": True},
+                "releaseInfo": {"all": True},
+                "allRestrictions": {"all": True},
                 "inlineEditProcessingStatus": True,
-                "videoPrechecks": {
-                    "all": True
-                },
-                "shorts": {
-                    "all": True
-                },
-                "selfCertification": {
-                    "all": True
-                },
-                "videoResolutions": {
-                    "all": True
-                },
-                "scheduledPublishingDetails": {
-                    "all": True
-                },
-                "visibility": {
-                    "all": True
-                },
-                "privateShare": {
-                    "all": True
-                },
-                "sponsorsOnly": {
-                    "all": True
-                },
+                "videoPrechecks": {"all": True},
+                "shorts": {"all": True},
+                "selfCertification": {"all": True},
+                "videoResolutions": {"all": True},
+                "scheduledPublishingDetails": {"all": True},
+                "visibility": {"all": True},
+                "privateShare": {"all": True},
+                "sponsorsOnly": {"all": True},
                 "unlistedExpired": True,
-                "videoTrailers": {
-                    "all": True
-                },
-                "remix": {
-                    "isSource": True
-                },
-                "isPaygated": True
+                "videoTrailers": {"all": True},
+                "remix": {"isSource": True},
+                "isPaygated": True,
             },
             "context": {
                 "client": {
@@ -563,15 +510,14 @@ class GoogleYouTubeStudio(GoogleWebSession):
                     "screenWidthPoints": 1366,
                     "screenHeightPoints": 157,
                     "screenPixelDensity": 1,
-                    "screenDensityFloat": 1
+                    "screenDensityFloat": 1,
                 },
                 "request": {
                     "returnLogEntry": True,
                     "internalExperimentFlags": [],
-                    "consistencyTokenJars": []
-                }
-
-            }
+                    "consistencyTokenJars": [],
+                },
+            },
         }
         _url = f"{self._base_url}/{self._service}/{self._version}/creator/list_creator_videos"
         all_set = True
@@ -580,18 +526,22 @@ class GoogleYouTubeStudio(GoogleWebSession):
             response.raise_for_status()
             data = response.json()
             if response.status_code == 402:
-                self.context.logger.info("Google Session Expired, Trying Again Please Wait...!")
+                self.context.logger.info(
+                    "Google Session Expired, Trying Again Please Wait...!"
+                )
                 self._session = self._web_request()
                 return self.list_videos()
-            if page_token := data.get('nextPageToken'):
-                payload['pageToken'] = page_token
+            if page_token := data.get("nextPageToken"):
+                payload["pageToken"] = page_token
             else:
                 all_set = False
-            content_videos = data.get('videos', [])
+            content_videos = data.get("videos", [])
             for video_data in content_videos:
                 yield StudioVideoObj(video_data)
 
-    def list_video_claims(self, video: StudioVideoObj) -> Optional[Generator[StudioVideoClaimsObj, None, None]]:
+    def list_video_claims(
+        self, video: StudioVideoObj
+    ) -> Optional[Generator[StudioVideoClaimsObj, None, None]]:
         """
         Show list claims on videos
         @param video: pass :class StudioVideoObj
@@ -610,35 +560,37 @@ class GoogleYouTubeStudio(GoogleWebSession):
                     "screenWidthPoints": 1366,
                     "screenHeightPoints": 342,
                     "screenPixelDensity": 1,
-                    "screenDensityFloat": 1
+                    "screenDensityFloat": 1,
                 },
                 "request": {
                     "returnLogEntry": True,
                     "internalExperimentFlags": [],
-                    "consistencyTokenJars": []
+                    "consistencyTokenJars": [],
                 },
                 "user": {
                     "delegationContext": {
                         "externalChannelId": self._channel_id,
                         "roleType": {
                             "channelRoleType": "CREATOR_CHANNEL_ROLE_TYPE_OWNER"
-                        }
+                        },
                     }
-                }
+                },
             },
             "videoId": video.video_id,
             "criticalRead": False,
-            "includeLicensingOptions": False
+            "includeLicensingOptions": False,
         }
         _url = f"{self._base_url}/{self._service}/{self._version}/creator/list_creator_received_claims?alt=json&key={self.auth_key}"
 
         response = self._session.post(_url, json=payload)
         response.raise_for_status()
         if response.status_code == 402:
-            self.context.logger.info("Google Session Expired, Trying Again Please Wait...!")
+            self.context.logger.info(
+                "Google Session Expired, Trying Again Please Wait...!"
+            )
             self._session = self._web_request()
             return self.list_video_claims(video)
-        data = response.json().get('receivedClaims', [])
+        data = response.json().get("receivedClaims", [])
 
         for claim in data:
             yield StudioVideoClaimsObj(claim)
@@ -661,34 +613,33 @@ class GoogleYouTubeStudio(GoogleWebSession):
                     "screenWidthPoints": 811,
                     "screenHeightPoints": 629,
                     "screenPixelDensity": 1,
-                    "screenDensityFloat": 1
+                    "screenDensityFloat": 1,
                 },
-                "request": {
-                    "returnLogEntry": True,
-                    "internalExperimentFlags": []
-                },
+                "request": {"returnLogEntry": True, "internalExperimentFlags": []},
                 "user": {
                     "delegationContext": {
                         "externalChannelId": self._channel_id,
                         "roleType": {
                             "channelRoleType": "CREATOR_CHANNEL_ROLE_TYPE_OWNER"
-                        }
+                        },
                     }
-                }
-            }
+                },
+            },
         }
 
         response = self._session.post(_url, json=payload)
         response.raise_for_status()
         if response.status_code == 402:
-            self.context.logger.info("Google Session Expired, Trying Again Please Wait...!")
+            self.context.logger.info(
+                "Google Session Expired, Trying Again Please Wait...!"
+            )
             self._session = self._web_request()
             return self._get_claimed_duration(claim)
         res_data = response.json()
-        claim_matches = res_data.get('matches').get('claimMatches')
+        claim_matches = res_data.get("matches").get("claimMatches")
         data = []
         for item in claim_matches:
-            data.append(item.get('videoSegment'))
+            data.append(item.get("videoSegment"))
         return data
 
     def trim_out(self, claim: StudioVideoClaimsObj):
@@ -697,7 +648,9 @@ class GoogleYouTubeStudio(GoogleWebSession):
         @param claim: Pass :class StudioVideoClaimsObj
         @return:
         """
-        _url = f"{self._base_url}/{self._service}/{self._version}/video_editor/edit_video"
+        _url = (
+            f"{self._base_url}/{self._service}/{self._version}/video_editor/edit_video"
+        )
 
         payload = {
             "externalVideoId": claim.video_id,
@@ -706,7 +659,7 @@ class GoogleYouTubeStudio(GoogleWebSession):
                     "claimId": claim.claim_id,
                     "method": "REMOVE_SONG_METHOD_TRIM",
                     "muteSegments": self._get_claimed_duration(claim),
-                    "allKnownMatchesCovered": False
+                    "allKnownMatchesCovered": False,
                 }
             },
             "context": {
@@ -721,43 +674,40 @@ class GoogleYouTubeStudio(GoogleWebSession):
                     "screenWidthPoints": 811,
                     "screenHeightPoints": 629,
                     "screenPixelDensity": 1,
-                    "screenDensityFloat": 1
+                    "screenDensityFloat": 1,
                 },
                 "request": {
                     "returnLogEntry": True,
                     "internalExperimentFlags": [],
-                    "sessionInfo": {
-                        "token": self._session_token
-                    },
-                    "consistencyTokenJars": []
+                    "sessionInfo": {"token": self._session_token},
+                    "consistencyTokenJars": [],
                 },
                 "user": {
                     "delegationContext": {
                         "externalChannelId": self._channel_id,
                         "roleType": {
                             "channelRoleType": "CREATOR_CHANNEL_ROLE_TYPE_OWNER"
-                        }
+                        },
                     }
-                }
-            }
+                },
+            },
         }
 
         response = self._session.post(_url, json=payload)
         if response.status_code == 409:
             return {
-                'status': 'wait till existing edit process to complete...!',
-                'code': "WAITING_FOR_COMPLETE"
+                "status": "wait till existing edit process to complete...!",
+                "code": "WAITING_FOR_COMPLETE",
             }
         if response.status_code == 402:
-            self.context.logger.info("Google Session Expired, Trying Again Please Wait...!")
+            self.context.logger.info(
+                "Google Session Expired, Trying Again Please Wait...!"
+            )
             self._session = self._web_request()
             return self.trim_out(claim)
         response.raise_for_status()
         res_data = response.json()
-        return {
-            'status': res_data.get('executionStatus'),
-            'code': "INITIATED_FOR_EDIT"
-        }
+        return {"status": res_data.get("executionStatus"), "code": "INITIATED_FOR_EDIT"}
 
     def mute_segment_songs(self, claim: StudioVideoClaimsObj, song_only=True):
         """
@@ -766,16 +716,20 @@ class GoogleYouTubeStudio(GoogleWebSession):
         @param song_only:
         @return:
         """
-        _url = f"{self._base_url}/{self._service}/{self._version}/video_editor/edit_video"
+        _url = (
+            f"{self._base_url}/{self._service}/{self._version}/video_editor/edit_video"
+        )
 
         payload = {
             "externalVideoId": claim.video_id,
             "claimEditChange": {
                 "addRemoveSongEdit": {
                     "claimId": claim.claim_id,
-                    "method": "REMOVE_SONG_METHOD_WAVEFORM_ERASE" if song_only else "REMOVE_SONG_METHOD_MUTE",
+                    "method": "REMOVE_SONG_METHOD_WAVEFORM_ERASE"
+                    if song_only
+                    else "REMOVE_SONG_METHOD_MUTE",
                     "muteSegments": self._get_claimed_duration(claim),
-                    "allKnownMatchesCovered": True
+                    "allKnownMatchesCovered": True,
                 }
             },
             "context": {
@@ -790,42 +744,38 @@ class GoogleYouTubeStudio(GoogleWebSession):
                     "screenWidthPoints": 811,
                     "screenHeightPoints": 629,
                     "screenPixelDensity": 1,
-                    "screenDensityFloat": 1
+                    "screenDensityFloat": 1,
                 },
                 "request": {
                     "returnLogEntry": True,
                     "internalExperimentFlags": [],
-
-                    "sessionInfo": {
-                        "token": self._session_token
-                    },
-                    "consistencyTokenJars": []
+                    "sessionInfo": {"token": self._session_token},
+                    "consistencyTokenJars": [],
                 },
                 "user": {
                     "delegationContext": {
                         "externalChannelId": self._channel_id,
                         "roleType": {
                             "channelRoleType": "CREATOR_CHANNEL_ROLE_TYPE_OWNER"
-                        }
+                        },
                     }
-                }
-            }
+                },
+            },
         }
 
         response = self._session.post(_url, json=payload)
         if response.status_code == 409:
             return {
-                'status': 'wait until existing edit process to complete...!',
-                'code': "WAITING_FOR_COMPLETE"
+                "status": "wait until existing edit process to complete...!",
+                "code": "WAITING_FOR_COMPLETE",
             }
         if response.status_code == 402:
-            self.context.logger.info("Google Session Expired, Trying Again Please Wait...!")
+            self.context.logger.info(
+                "Google Session Expired, Trying Again Please Wait...!"
+            )
             self._session = self._web_request()
             return self.mute_segment_songs(claim, song_only)
 
         response.raise_for_status()
         res_data = response.json()
-        return {
-            'status': res_data.get('executionStatus'),
-            'code': "INITIATED_FOR_EDIT"
-        }
+        return {"status": res_data.get("executionStatus"), "code": "INITIATED_FOR_EDIT"}
