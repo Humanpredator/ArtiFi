@@ -1,3 +1,6 @@
+"""
+Messing Function
+"""
 from pathlib import Path
 from typing import List, Union
 
@@ -6,14 +9,25 @@ from discord.ext.commands import Context
 
 
 async def send_message(
-    ctx: Union[Context, Member],
-    content: str = None,
-    embed: Embed = None,
-    files: str = None,
-    reply: bool = False,
-    markup=None,
-    delete: float = None,
+        ctx: Union[Context, Member],
+        content: str = None,
+        embed: Embed = None,
+        files: str = None,
+        reply: bool = False,
+        markup=None,
+        delete: float = None,
 ) -> Message | None:
+    """
+
+    @param ctx:
+    @param content:
+    @param embed:
+    @param files:
+    @param reply:
+    @param markup:
+    @param delete:
+    @return:
+    """
     payload = {
         "content": content,
         "embed": embed,
@@ -29,13 +43,23 @@ async def send_message(
 
 
 async def edit_message(
-    message: Message,
-    content: str = None,
-    embed: Embed = None,
-    files: str = None,
-    delete: float = None,
-    markup=None,
+        message: Message,
+        content: str = None,
+        embed: Embed = None,
+        files: str = None,
+        delete: float = None,
+        markup=None,
 ) -> Message | None:
+    """
+
+    @param message:
+    @param content:
+    @param embed:
+    @param files:
+    @param delete:
+    @param markup:
+    @return:
+    """
     payload = {
         "content": content,
         "embed": embed,
@@ -50,6 +74,12 @@ async def edit_message(
 
 
 async def delete_message(message: Message, delay: float = None) -> None:
+    """
+
+    @param message:
+    @param delay:
+    @return:
+    """
     try:
         return await message.delete(delay=delay)
     except NotFound:
@@ -57,12 +87,21 @@ async def delete_message(message: Message, delay: float = None) -> None:
 
 
 async def send_files(
-    ctx: Context,
-    content: str = None,
-    files: str = None,
-    reply: bool = False,
-    delete: float = None,
+        ctx: Context,
+        content: str = None,
+        files: str = None,
+        reply: bool = False,
+        delete: float = None,
 ) -> Message | None:
+    """
+
+    @param ctx:
+    @param content:
+    @param files:
+    @param reply:
+    @param delete:
+    @return:
+    """
     payload = {
         "content": content,
         "files": fileio(files),
@@ -76,6 +115,11 @@ async def send_files(
 
 
 def fileio(files: Union[str, Path, List[Union[str, Path]]]) -> List[File]:
+    """
+
+    @param files:
+    @return:
+    """
     if not files:
         return []
     if isinstance(files, (str, Path)):

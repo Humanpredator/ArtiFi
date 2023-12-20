@@ -1,19 +1,31 @@
+"""
+Manager user to invoke the command
+"""
 from datetime import datetime
 
 from discord import Embed
 from discord.ext.commands import Cog, command
 
 from artifi.discord import Discord, DiscordSudoModel
-from artifi.discord.misc.custom_function import send_message
+from artifi.discord.misc.discord_func import send_message
 
 
 class Auth(Cog):
     def __init__(self, bot):
+        """
+
+        @param bot:
+        """
         super().__init__()
         self._bot: Discord = bot
 
     @command("promote", help="Reply To The Message Of User, Who Want To Promote.")
     async def promote_user(self, ctx):
+        """
+
+        @param ctx:
+        @return:
+        """
         if not self._bot.owner_only(ctx):
             return await send_message(ctx, "Access Denied...!")
         if ctx.message.reference:
@@ -37,10 +49,15 @@ class Auth(Cog):
 
             await send_message(ctx, response)
         else:
-            await send_message(ctx, "Usage !addsudo reply to this to user...!")
+            await send_message(ctx, "Usage !promote reply to this to user...!")
 
     @command("demote", help="Reply To The Message Of User, Who Want To De-Promote.")
     async def demote_user(self, ctx):
+        """
+
+        @param ctx:
+        @return:
+        """
         if not self._bot.owner_only(ctx):
             return await send_message(ctx, "Access Denied...!")
         if ctx.message.reference:
@@ -60,10 +77,15 @@ class Auth(Cog):
                     session.commit()
             await send_message(ctx, response)
         else:
-            await send_message(ctx, "Usage !rmvsudo reply to this to user...!")
+            await send_message(ctx, "Usage !demote reply to this to user...!")
 
     @command("showsudo", help="Get All Sudo Users ID's.")
     async def show_sudo(self, ctx):
+        """
+
+        @param ctx:
+        @return:
+        """
         if not self._bot.owner_only(ctx):
             return await send_message(ctx, "Access Denied...!")
         user_data = self._bot.get_all_users()
@@ -77,4 +99,8 @@ class Auth(Cog):
 
 
 async def setup(bot):
+    """
+
+    @param bot:
+    """
     await bot.add_cog(Auth(bot))

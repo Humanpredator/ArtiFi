@@ -1,3 +1,4 @@
+"""Server Details"""
 import platform
 import shutil
 import time
@@ -9,16 +10,29 @@ from discord import Embed
 from discord.ext.commands import Cog, command
 
 from artifi.discord import Discord
-from artifi.discord.misc.custom_function import edit_message, send_message
-from artifi.utils.func import readable_size, readable_time
+from artifi.discord.misc.discord_func import edit_message, send_message
+from artifi.utils import readable_size, readable_time
 
 
 class Stats(Cog):
+    """
+    Get Server hardware and other details
+    """
+
     def __init__(self, bot):
+        """
+
+        @param bot:
+        """
         self._bot: Discord = bot
 
     @command("stats", help="Fetch All Possible Detail About The Hosted Server.")
     async def server_status(self, ctx):
+        """
+
+        @param ctx:
+        @return:
+        """
         if not self._bot.sudo_only(ctx):
             return await send_message(ctx, "Access Denied...!")
         msg = await send_message(ctx, content="Getting Server Stats...!", reply=True)
@@ -79,4 +93,8 @@ Total Download: ***{recv}***
 
 
 async def setup(bot):
+    """
+
+    @param bot:
+    """
     await bot.add_cog(Stats(bot))

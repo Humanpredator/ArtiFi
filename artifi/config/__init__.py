@@ -1,14 +1,28 @@
+"""
+Env Config Setter
+"""
+
 import importlib.util
 import os
 import sys
 
 from dotenv import load_dotenv
 
-from artifi.config.exception import ConfigFileError
+from artifi.config.ext.exception import ConfigFileError
 
 
 class BaseConfig:
+    """
+    The Class will be load the all the required environment config for the Project and cannot be called directly
+    """
+
     def __init__(self, import_name, config_path):
+        """
+        @param import_name: The name of the current working file
+                            example: import_name = __name__
+        @param config_path: The file path of config.env
+
+        """
         self._import_name = import_name
         self._env_path: str = config_path
         if not self._env_path:
@@ -57,6 +71,10 @@ class BaseConfig:
         f.close()
 
     def get_root_path(self) -> str:
+        """
+
+        @return: path of the import_name
+        """
         if not self._import_name:
             raise Exception("App Name Required")
         mod = sys.modules.get(self._import_name)

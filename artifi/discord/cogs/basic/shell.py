@@ -1,20 +1,33 @@
+"""Terminal Cog"""
 import os
 import subprocess
 
 from discord.ext.commands import Cog, command
 
 from artifi.discord import Discord
-from artifi.discord.misc.custom_function import edit_message, send_message
+from artifi.discord.misc.discord_func import edit_message, send_message
 
 
 class Shell(Cog):
+    """Execute the commands in terminal"""
+
     def __init__(self, bot):
+        """
+
+        @param bot:
+        """
         self._bot: Discord = bot
 
     @command(
         "shell", help="Execute a command directly on the machine shell via the artifi."
     )
     async def shell_discord(self, ctx, *args):
+        """
+
+        @param ctx:
+        @param args:
+        @return:
+        """
         if not self._bot.owner_only(ctx):
             return await send_message(ctx, "Access Denied...!")
         if not args:
@@ -60,4 +73,8 @@ class Shell(Cog):
 
 
 async def setup(bot):
+    """
+
+    @param bot:
+    """
     await bot.add_cog(Shell(bot))

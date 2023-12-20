@@ -1,20 +1,34 @@
+"""Speedtest Cog"""
 from datetime import datetime
 
 from discord import Embed
 from discord.ext.commands import Cog, command
 from speedtest import Speedtest
 
-from artifi.discord import Discord, send_message
-from artifi.discord.misc.custom_function import edit_message
-from artifi.utils.func import speed_convert
+from artifi.discord import Discord
+from artifi.discord.misc.discord_func import edit_message, send_message
+from artifi.utils import speed_convert
 
 
 class NetworkTest(Cog):
+    """
+    To Test the Network Speed
+    """
+
     def __init__(self, bot):
+        """
+
+        @param bot:
+        """
         self._bot: Discord = bot
 
     @command("speedtest", help="Check The Internet Speed Of The Hosted Server.")
     async def speedtest(self, ctx):
+        """
+
+        @param ctx:
+        @return:
+        """
         if not self._bot.sudo_only(ctx):
             return await send_message(ctx, "Access Denied...!")
         msg = await send_message(ctx, "Starting Network Test...!", reply=True)
@@ -42,4 +56,8 @@ ISP Rating: ***{result['client']['isprating']}***
 
 
 async def setup(bot):
+    """
+
+    @param bot:
+    """
     await bot.add_cog(NetworkTest(bot))

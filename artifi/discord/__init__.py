@@ -1,3 +1,6 @@
+"""
+Discord Bot Using Discord Py
+"""
 import os
 import time
 from typing import Any, Optional, List
@@ -7,11 +10,15 @@ import wavelink
 from discord.ext.commands import Bot, Context
 
 from artifi import Artifi
-from artifi.discord.misc.custom_command import MyHelpCommand
+from artifi.discord.misc.discord_command import MyHelpCommand
 from artifi.discord.misc.discord_model import DiscordSudoModel
 
 
 class Discord(Bot):
+    """
+    Discord Bot
+    """
+
     def __init__(
             self,
             context,
@@ -20,6 +27,13 @@ class Discord(Bot):
             intents=discord.Intents.all(),
             **options: Any,
     ):
+        """
+
+        @param context: pass :class Artifi
+        @param command_prefix: Symbol used to invoke the commands
+        @param intents: Scope to be used
+        @param options: optional key=value
+        """
         super().__init__(command_prefix, intents=intents, **options)
         self.bot_start_time = time.time()
         self.context: Artifi = context
@@ -29,15 +43,29 @@ class Discord(Bot):
         self.context.create_db_table(self.db_tables)
 
     def get_all_users(self) -> list:
+        """
+        Get all user who have access to invoke command
+        @return:
+        """
         with self.context.db_session() as session:
             user_data = session.query(DiscordSudoModel).all()
         return [user.user_id for user in user_data]
 
     def owner_only(self, ctx: Context) -> bool:
+        """
+        Check the command invoked by Owner
+        @param ctx: discord context
+        @return:
+        """
         author_id = ctx.author.id
         return bool(author_id == self.context.DISCORD_OWNER_ID)
 
     def sudo_only(self, ctx: Context) -> bool:
+        """
+        Check the command invoked by Sudo user on DB
+        @param ctx: discord context
+        @return:
+        """
         if isinstance(ctx, Context):
             author_id = ctx.author.id
             return bool(
@@ -78,5 +106,9 @@ class Discord(Bot):
         self.context.logger.info("Discord Bot Online...!")
 
     def run_bot(self):
+        """
+        Run the Discord bot with some default cogs
+        @return:
+        """
         self.add_listener(self._load_default, "on_ready")
         return self.run(self.context.DISCORD_BOT_TOKEN, log_handler=None)

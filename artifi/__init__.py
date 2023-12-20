@@ -1,3 +1,6 @@
+"""
+Artifi Main
+"""
 import logging
 import os
 import sys
@@ -13,14 +16,22 @@ from sqlalchemy import Engine, create_engine
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session, declarative_base, sessionmaker
 
+from artifi.config.ext.logger import LogConfig
 from .config import BaseConfig
-from .config.logger import LogConfig
 
 
 class Artifi(BaseConfig):
+    """
+    Needs to be initiated first and required by all other class
+    example_usage: arti=Artifi(__name__)
+    """
     dbmodel = declarative_base()
 
     def __init__(self, import_name, config_path: Optional[None | str] = None):
+        """
+        @param import_name: Current file name
+        @param config_path: config.env path
+        """
         super().__init__(import_name, config_path)
 
         self.import_name: str = import_name
@@ -39,6 +50,12 @@ class Artifi(BaseConfig):
         )
 
     def create_db_table(self, tables: List[dbmodel]):
+        """
+
+        @param tables: List of model class
+                example: DBModel
+        @return: It will return whether the table is created or not
+        """
         if tables:
             for table in tables:
                 table(self).__table__.create(
@@ -47,11 +64,19 @@ class Artifi(BaseConfig):
         return True
 
     def _create_directory(self):
+        """
+
+        @return create and return the default directory for the file and other junks required for artifi:
+        """
         working_directory = os.path.join(self.cwd, "Downloads")
         os.makedirs(working_directory, exist_ok=True)
         return working_directory
 
     def _db_engine(self) -> Engine:
+        """
+
+        @return connect to db and return the connection engine:
+        """
         try:
             engine = create_engine(self.SQLALCHEMY_DATABASE_URI, echo=False)
         except SQLAlchemyError as e:
@@ -60,6 +85,10 @@ class Artifi(BaseConfig):
         return engine
 
     def db_session(self) -> Session:
+        """
+
+        @return: New DB session
+        """
         session_maker = sessionmaker(bind=self.db_engine)
         return session_maker()
 
@@ -73,6 +102,19 @@ class Artifi(BaseConfig):
             end_date: Optional[str] = None,
             allow_duplicate: bool = True,
     ):
+        """
+        @param function: A Callable function
+        @param start_time: Determine when to start the schedular
+        @param end_time: Determine when to stop the schedular
+        @param interval: Time delay between execution
+        @param start_date: Starting date of the schedular execution
+        @param end_date: Starting date of the schedular execution
+        @param allow_duplicate: 'True' to replace the existing schedular with same job_id.'False' to add same schedular
+                                with same job_id
+        example_usage: self.add_scheduler(function,'HH:MM','HH:MM','YYYY-MM-DD','YYYY-MM-DD',60)
+        Note: If the start_time or end_time is not given it will take 00:00 and 23:59, and if start_date or end_date is
+                not given it will run every day, and the default interval will be 24hrs
+        """
         defaults = {
             "start_date": datetime.now().strftime("%Y-%m-%d"),
             "end_date": (datetime.now() + timedelta(days=1)).strftime("%Y-%m-%d"),
@@ -82,9 +124,7 @@ class Artifi(BaseConfig):
         }
         start_date, end_date, start_time, end_time, interval = (
             value if value is not None else defaults[key]
-            for key, value in zip(
-            defaults.keys(), (start_date, end_date, start_time, end_time, interval)
-        )
+            for key, value in zip(defaults.keys(), (start_date, end_date, start_time, end_time, interval))
         )
         tz = pytz.timezone("asia/kolkata")
         start_datetime = tz.localize(
@@ -109,8 +149,16 @@ class Artifi(BaseConfig):
         )
 
     def start_schedular(self):
+        """
+
+        @return: It will start all the schedular job in the self.__scheduler and return the status
+        """
         return self._scheduler.start()
 
     @property
     def module_path(self):
+        """
+
+        @return package path:
+        """
         return self._module_path

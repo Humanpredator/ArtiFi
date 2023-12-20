@@ -1,3 +1,4 @@
+"""Play Music On Discord"""
 import datetime
 import re
 import uuid
@@ -10,7 +11,7 @@ from discord.ui import View, button
 from wavelink import AutoPlayMode, player
 
 from artifi.discord import Discord
-from artifi.discord.misc.custom_function import (
+from artifi.discord.misc.discord_func import (
     delete_message,
     edit_message,
     send_message,
@@ -18,7 +19,16 @@ from artifi.discord.misc.custom_function import (
 
 
 class PlayerControl(View):
+    """UI to control the Music"""
+
     def __init__(self, bot, voice_client=None, channel=None, message=None):
+        """
+
+        @param bot:
+        @param voice_client:
+        @param channel:
+        @param message:
+        """
         super().__init__()
         self._bot: Discord = bot
         self.voice_client: player = voice_client
@@ -39,6 +49,10 @@ class PlayerControl(View):
         return "Stopped"
 
     async def verify_message(self):
+        """
+
+        @return:
+        """
         try:
             return await self.channel.fetch_message(self.message.id)
         except NotFound:
@@ -46,9 +60,14 @@ class PlayerControl(View):
 
     @tasks.loop(seconds=5)
     async def update_status_task(self, _delete=None):
+        """
+
+        @param _delete:
+        @return:
+        """
         if (
-            not (message := await self.verify_message())
-            or not self.voice_client.connected
+                not (message := await self.verify_message())
+                or not self.voice_client.connected
         ):
             self._bot.context.logger.info(
                 f"{self._control_id}: Music player Status Updating Task Disposed...!"
@@ -76,6 +95,11 @@ class PlayerControl(View):
 
     @button(label="Play/Pause", style=ButtonStyle.green)
     async def play_button(self, *args):
+        """
+
+        @param args:
+        @return:
+        """
         interaction = args[0]
         if not self._bot.sudo_only(interaction.user.id):
             return await interaction.response.defer()
@@ -88,6 +112,11 @@ class PlayerControl(View):
 
     @button(label="Next", style=ButtonStyle.grey)
     async def next_button(self, *args):
+        """
+
+        @param args:
+        @return:
+        """
         interaction = args[0]
         if not self._bot.sudo_only(interaction.user.id):
             return await interaction.response.defer()
@@ -98,6 +127,11 @@ class PlayerControl(View):
 
     @button(label="Stop", style=ButtonStyle.red)
     async def stop_button(self, *args):
+        """
+
+        @param args:
+        @return:
+        """
         interaction = args[0]
         if not self._bot.sudo_only(interaction.user.id):
             return await interaction.response.defer()
@@ -111,6 +145,11 @@ class PlayerControl(View):
 
     @button(label="Vol +", style=ButtonStyle.primary, row=2)
     async def increase_volume(self, *args):
+        """
+
+        @param args:
+        @return:
+        """
         interaction = args[0]
         if not self._bot.sudo_only(interaction.user.id):
             return await interaction.response.defer()
@@ -121,6 +160,11 @@ class PlayerControl(View):
 
     @button(label="Vol -", style=ButtonStyle.primary, row=2)
     async def decrease_volume(self, *args):
+        """
+
+        @param args:
+        @return:
+        """
         interaction = args[0]
         if not self._bot.sudo_only(interaction.user.id):
             return await interaction.response.defer()
@@ -131,17 +175,33 @@ class PlayerControl(View):
 
 
 class Music(Cog):
+    """Play music using lavalink server"""
+
     def __init__(self, bot):
+        """
+
+        @param bot:
+        """
         self._bot: Discord = bot
         self.music_player: dict = {}
 
     @staticmethod
     def is_url(url) -> bool:
+        """
+
+        @param url:
+        @return:
+        """
         # Regular expression to check if the input is a URL
         url_pattern = r"^(https?://)?[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}(/\S*)?$"
         return bool(re.match(url_pattern, url))
 
     def check_url_service(self, url) -> str:
+        """
+
+        @param url:
+        @return:
+        """
         spotify_pattern = r"^(https?://)?(www\.)?open\.spotify\.com/.*"
         youtube_pattern = r"^(https?://)?(www\.)?youtube\.com/.*"
 
@@ -157,6 +217,12 @@ class Music(Cog):
         "play", help="Send YT URL or Spotify URL or Track Name Followed By Command."
     )
     async def play(self, ctx: Context, *args: str):
+        """
+
+        @param ctx:
+        @param args:
+        @return:
+        """
         if not self._bot.sudo_only(ctx):
             return await send_message(ctx, "Access Denied...!")
 
@@ -206,8 +272,8 @@ class Music(Cog):
         for track in tracks:
             await music_player.voice_client.queue.put_wait(track)
             if (
-                not music_player.voice_client.playing
-                and not music_player.voice_client.paused
+                    not music_player.voice_client.playing
+                    and not music_player.voice_client.paused
             ):
                 await music_player.voice_client.play(track, add_history=True)
 
@@ -216,4 +282,8 @@ class Music(Cog):
 
 
 async def setup(bot):
+    """
+
+    @param bot:
+    """
     await bot.add_cog(Music(bot))

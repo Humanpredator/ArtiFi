@@ -1,3 +1,6 @@
+"""
+Collection Of Unofficial Instagram API's
+"""
 import os
 import pickle
 import time
@@ -16,11 +19,24 @@ from instaloader import (
 )
 
 from artifi import Artifi
-from artifi.instagram.misc.custom_func import CustomContext
+from artifi.instagram.ext import CustomContext
 
 
 class Instagram(Instaloader):
+    """
+    Download instagram user post and highlights using Instaloader
+    """
+
     def __init__(self, context, ig_username, ig_password):
+        """
+        Logging in on instagram using instaloader will cause temporary ban if your using on cloud server of another ip.
+        So It's recommended to first logging the instagram on the firefox. Currently, this script will access the
+        firefox and fetch the instagram cookie from there.
+        @note If something not working then login again on firefox and run this script again.
+        @param context: Pass :class Artifi
+        @param ig_username: Instagram username
+        @param ig_password: Instagram password
+        """
         super().__init__()
         self.acontext: Artifi = context
         self.context: InstaloaderContext = CustomContext(self.acontext)
@@ -37,6 +53,10 @@ class Instagram(Instaloader):
 
     @staticmethod
     def _get_cookie_path() -> str:
+        """
+        Fetch the instagram cookies path from firefox
+        @return:  cookie path
+        """
         default_cookie_path = {
             "Windows": "~/AppData/Roaming/Mozilla/Firefox/Profiles/*/cookies.sqlite",
             "Darwin": "~/Library/Application Support/Firefox/Profiles/*/cookies.sqlite",
@@ -46,6 +66,10 @@ class Instagram(Instaloader):
         return cookie_paths[0] if cookie_paths else None
 
     def _fetch_and_save_cookies(self) -> str:
+        """
+        Save cookie file from firefox
+        @return: saved cookie path
+        """
         cookie_path = self._get_cookie_path()
 
         if cookie_path:
@@ -71,6 +95,10 @@ class Instagram(Instaloader):
         return cookie_path
 
     def _insta_session(self) -> bool:
+        """
+        Used to validate saved cookie
+        @return: True = valid, False = Invalid
+        """
         cookie = self._fetch_and_save_cookies()
         if not cookie:
             return bool(0)
@@ -79,19 +107,30 @@ class Instagram(Instaloader):
 
     @staticmethod
     def file_name(name: str, post: Post | StoryItem) -> str:
+        """
+        Create unique filename for the file
+        @param name: prefix name for the filename first 5-letter will be used
+        @param post: post object
+        @return: file name :example Name_YYMMDDHHSS_post.id
+        """
         post_time = post.date
         year = post_time.year % 100
         month = post_time.month
         day = post_time.day
         hour = post_time.hour
         minute = post_time.minute
-        postdt = f"{year:02d}{month:02d}{day:02d}{hour:02d}{minute:02d}"
+        post_dt = f"{year:02d}{month:02d}{day:02d}{hour:02d}{minute:02d}"
         post_sid = post.shortcode[:5]
-        file_pattern = f"{name[:5]}{postdt}{post_sid}"
+        file_pattern = f"{name[:5]}{post_dt}{post_sid}"
         return file_pattern
 
     @staticmethod
     def sanitize_folder_name(string) -> str:
+        """
+        Remove any chars which not allowed to be named for folder
+        @param string: name of the folder to be created
+        @return: removed char string
+        """
         forbidden_chars_windows = {"<", ">", ":", '"', "/", "\\", "|", "?", "*"}
         forbidden_chars_linux = {"/"}
         if os.name == "nt":
@@ -104,6 +143,10 @@ class Instagram(Instaloader):
         return sanitize_string
 
     def download_posts(self, user_name) -> None:
+        """
+        Download all the instagram posts of the given username
+        @param user_name: Instagram username
+        """
         profile: Profile = Profile.from_username(self.context, user_name.strip())
         post_path = os.path.join(self.acontext.directory, str(profile.userid), "Posts")
         os.makedirs(post_path, exist_ok=True)
@@ -115,6 +158,10 @@ class Instagram(Instaloader):
         self.acontext.logger.info(f"{profile.username} Post Was Downloaded...!")
 
     def download_album(self, user_name) -> None:
+        """
+        Download all highlights of given username
+        @param user_name: Instagram username
+        """
         profile: Profile = Profile.from_username(self.context, user_name.strip())
         highlight_path = os.path.join(
             self.acontext.directory, str(profile.userid), "Highlights"

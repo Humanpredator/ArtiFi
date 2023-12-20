@@ -1,3 +1,6 @@
+"""
+Google People API
+"""
 from typing import Generator, Optional
 
 from googleapiclient.discovery import build
@@ -7,13 +10,26 @@ from artifi.google import Google
 
 
 class GooglePeople(Google):
+    """
+    To get google contacts
+    uses Oauth
+    """
+
     def __init__(self, context, scope):
+        """
+
+        @param context:
+        @param scope:
+        """
         super().__init__(context)
         self.context: Artifi = context
         self._creds = self.oauth_creds(scope)
         self._service = build("people", "v1", credentials=self._creds)
 
     def get_contacts(self) -> Generator:
+        """
+        fetch all available contacts
+        """
         results = (
             self._service.people()
             .connections()
@@ -30,6 +46,10 @@ class GooglePeople(Google):
 
 
 class GoogleContactObj:
+    """
+    Contacts Details
+    """
+
     def __init__(self, obj):
         self._contact_obj: Optional[dict] = obj
         self._profile_name: Optional[str] = None
@@ -53,16 +73,32 @@ class GoogleContactObj:
 
     @property
     def profile_name(self) -> str:
+        """
+        Contact Name
+        @return:
+        """
         return self._profile_name
 
     @property
     def profile_dob(self) -> str:
+        """
+        Contact Date Of Birth
+        @return:
+        """
         return self._profile_dob
 
     @property
     def mobile_numbers(self) -> list:
+        """
+        Mobile number
+        @return:
+        """
         return self._mobile_number
 
     @property
     def profile_url(self) -> str:
+        """
+        Profile Pic URL
+        @return:
+        """
         return self._profile_url

@@ -1,3 +1,6 @@
+"""
+Cloudflare Beta AI
+"""
 import os
 
 from artifi import Artifi
@@ -5,11 +8,25 @@ from artifi.cloudflare import CloudFlare
 
 
 class CloudFlareAi(CloudFlare):
+    """
+    Cloudflare AI REST API
+    """
+
     def __init__(self, context):
+        """
+
+        @param context: Artifi object
+        """
         super().__init__(context)
         self.context: Artifi = context
 
     def text_generation(self, chat_uid: str, msg: str, model="meta_fp") -> str:
+        """
+        @param chat_uid: unique string to store user prompt on memory
+        @param msg: prompt
+        @param model: pass the text-generation models
+        @return: AI response for your msg
+        """
         if not self._chat_data.get(chat_uid):
             self._chat_data[chat_uid] = {
                 "messages": [{"role": "user", "content": msg.strip()}]
@@ -27,7 +44,12 @@ class CloudFlareAi(CloudFlare):
         return msg
 
     def image_generation(self, prompt: str, path: str = None, model="sd_xl") -> str:
-
+        """
+        @param prompt: prompt to be generated
+        @param path: file path to store generated images
+        @param model: text to image generation model
+        @return: saved file path
+        """
         if not path:
             path = self.context.directory
         payload = {
