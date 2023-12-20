@@ -9,8 +9,7 @@ class CustomContext(InstaloaderContext):
         super().__init__()
 
     def log(self, *msg, sep="", end="\n", flush=False):
-        log_message = sep.join(map(str, msg))
-        self.acontext.logger.info(log_message)
+        self.acontext.logger.info(f"{sep.join(map(str, msg))}{end}")
 
     def error(self, msg, repeat_at_end=True):
         self.acontext.logger.info(msg)
