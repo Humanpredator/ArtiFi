@@ -649,6 +649,11 @@ class GoogleYouTubeStudio(GoogleWebSession):
             yield StudioVideoClaimsObj(claim)
 
     def _get_claimed_duration(self, claim: StudioVideoClaimsObj):
+        """
+        
+        @param claim:
+        @return:
+        """
         _url = f"{self._base_url}/{self._service}/{self._version}/copyright/get_creator_received_claim_matches"
         payload = {
             "videoId": claim.video_id,

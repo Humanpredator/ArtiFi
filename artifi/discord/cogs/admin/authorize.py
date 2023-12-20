@@ -9,6 +9,8 @@ from artifi.discord.misc.discord_func import send_message
 
 
 class Auth(Cog):
+    """Allow Server User to invoke the command"""
+
     def __init__(self, bot):
         """@param bot:"""
         super().__init__()
