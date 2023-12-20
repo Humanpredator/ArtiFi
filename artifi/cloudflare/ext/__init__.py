@@ -1,3 +1,1 @@
-"""
-Ext for Cloudflare
-"""
+"""Ext for Cloudflare"""

@@ -15,15 +15,10 @@ from artifi.utils import readable_size, readable_time
 
 
 class Stats(Cog):
-    """
-    Get Server hardware and other details
-    """
+    """Get Server hardware and other details"""
 
     def __init__(self, bot):
-        """
-
-        @param bot:
-        """
+        """@param bot:"""
         self._bot: Discord = bot
 
     @command("stats", help="Fetch All Possible Detail About The Hosted Server.")
@@ -93,8 +88,5 @@ Total Download: ***{recv}***
 
 
 async def setup(bot):
-    """
-
-    @param bot:
-    """
+    """@param bot:"""
     await bot.add_cog(Stats(bot))

@@ -1,6 +1,4 @@
-"""
-Cloudflare Beta AI
-"""
+"""Cloudflare Beta AI"""
 import os
 
 from artifi import Artifi
@@ -8,15 +6,10 @@ from artifi.cloudflare import CloudFlare
 
 
 class CloudFlareAi(CloudFlare):
-    """
-    Cloudflare AI REST API
-    """
+    """Cloudflare AI REST API"""
 
     def __init__(self, context):
-        """
-
-        @param context: Artifi object
-        """
+        """@param context: Artifi object"""
         super().__init__(context)
         self.context: Artifi = context
 

@@ -1,6 +1,4 @@
-"""
-Discord Bot Using Discord Py
-"""
+"""Discord Bot Using Discord Py"""
 import os
 import time
 from typing import Any, Optional, List
@@ -15,9 +13,7 @@ from artifi.discord.misc.discord_model import DiscordSudoModel
 
 
 class Discord(Bot):
-    """
-    Discord Bot
-    """
+    """Discord Bot"""
 
     def __init__(
             self,

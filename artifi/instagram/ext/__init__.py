@@ -1,20 +1,14 @@
-"""
-Ext For Instagram
-"""
+"""Ext For Instagram"""
 from instaloader import InstaloaderContext
 
 from artifi import Artifi
 
 
 class CustomContext(InstaloaderContext):
-    """
-    To Alter the Instaloader default logging method
-    """
+    """To Alter the Instaloader default logging method"""
 
     def __init__(self, acontext: Artifi):
-        """
-        @param acontext: Pass :class Artifi
-        """
+        """@param acontext: Pass :class Artifi"""
         self.acontext = acontext
         super().__init__()
 

@@ -1,6 +1,4 @@
-"""
-Common function used throughout the package
-"""
+"""Common function used throughout the package"""
 
 from typing import Union, List
 

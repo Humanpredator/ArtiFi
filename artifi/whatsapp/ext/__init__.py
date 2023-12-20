@@ -1,3 +1,1 @@
-"""
-Ext for WhatsApp
-"""
+"""Ext for WhatsApp"""

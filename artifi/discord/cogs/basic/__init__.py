@@ -1,3 +1,1 @@
-"""
-Basic Cogs
-"""
+"""Basic Cogs"""

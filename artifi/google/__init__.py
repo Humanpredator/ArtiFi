@@ -1,6 +1,4 @@
-"""
-Collection Of Google API's
-"""
+"""Collection Of Google API's"""
 import os
 import pickle
 
@@ -11,15 +9,10 @@ from artifi import Artifi
 
 
 class Google:
-    """
-    Base class for Google API's
-    """
+    """Base class for Google API's"""
 
     def __init__(self, context):
-        """
-        
-        @param context: pass :class Artifi
-        """
+        """@param context: pass :class Artifi"""
         self.context: Artifi = context
 
     def oauth_creds(self, scope):

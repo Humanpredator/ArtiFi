@@ -1,6 +1,4 @@
-"""
-WhatsApp message storing DB Model
-"""
+"""WhatsApp message storing DB Model"""
 from sqlalchemy import INTEGER, TIMESTAMP, VARCHAR, Column, ForeignKey
 from sqlalchemy.orm import relationship
 
@@ -8,9 +6,7 @@ from artifi import Artifi
 
 
 class WaProfileModel(Artifi.dbmodel):
-    """
-    WA Profile Model
-    """
+    """WA Profile Model"""
 
     def __init__(self, context):
         self.context: Artifi = context
@@ -26,9 +22,7 @@ class WaProfileModel(Artifi.dbmodel):
 
 
 class WaMessageModel(Artifi.dbmodel):
-    """
-    WhatsApp message model
-    """
+    """WhatsApp message model"""
 
     def __init__(self, context):
         self.context: Artifi = context

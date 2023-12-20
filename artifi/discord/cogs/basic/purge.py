@@ -9,10 +9,7 @@ class Purge(Cog):
     """Delete the Messages"""
 
     def __init__(self, bot):
-        """
-
-        @param bot:
-        """
+        """@param bot:"""
         self._bot: Discord = bot
 
     @command("purge", help="Delete The Given Amount Of Message.")
@@ -33,8 +30,5 @@ class Purge(Cog):
 
 
 async def setup(bot):
-    """
-
-    @param bot:
-    """
+    """@param bot:"""
     await bot.add_cog(Purge(bot))

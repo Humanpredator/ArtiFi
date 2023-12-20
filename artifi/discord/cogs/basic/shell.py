@@ -12,10 +12,7 @@ class Shell(Cog):
     """Execute the commands in terminal"""
 
     def __init__(self, bot):
-        """
-
-        @param bot:
-        """
+        """@param bot:"""
         self._bot: Discord = bot
 
     @command(
@@ -73,8 +70,5 @@ class Shell(Cog):
 
 
 async def setup(bot):
-    """
-
-    @param bot:
-    """
+    """@param bot:"""
     await bot.add_cog(Shell(bot))

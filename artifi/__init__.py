@@ -1,6 +1,4 @@
-"""
-Artifi Main
-"""
+"""Artifi Main"""
 import logging
 import os
 import sys
@@ -73,10 +71,7 @@ class Artifi(BaseConfig):
         return working_directory
 
     def _db_engine(self) -> Engine:
-        """
-
-        @return connect to db and return the connection engine:
-        """
+        """@return connect to db and return the connection engine:"""
         try:
             engine = create_engine(self.SQLALCHEMY_DATABASE_URI, echo=False)
         except SQLAlchemyError as e:
@@ -85,10 +80,7 @@ class Artifi(BaseConfig):
         return engine
 
     def db_session(self) -> Session:
-        """
-
-        @return: New DB session
-        """
+        """@return: New DB session"""
         session_maker = sessionmaker(bind=self.db_engine)
         return session_maker()
 
@@ -157,8 +149,5 @@ class Artifi(BaseConfig):
 
     @property
     def module_path(self):
-        """
-
-        @return package path:
-        """
+        """@return package path:"""
         return self._module_path

@@ -1,6 +1,4 @@
-"""
-Override the Default Help Command
-"""
+"""Override the Default Help Command"""
 import discord
 from discord.ext.commands import HelpCommand
 

@@ -1,6 +1,4 @@
-"""
-Collection Of Whatsapp Apps
-"""
+"""Collection Of Whatsapp Apps"""
 from datetime import datetime
 from typing import Callable
 
@@ -13,14 +11,10 @@ from artifi.whatsapp.ext.wam_model import WaMessageModel, WaProfileModel
 
 
 class WhatsApp:
-    """
-    Whatsapp Cloud API's
-    """
+    """Whatsapp Cloud API's"""
 
     def __init__(self, context: Artifi):
-        """
-        @param context: :class Artifi
-        """
+        """@param context: :class Artifi"""
         self.context = context
         self.base_url = "https://graph.facebook.com"
         self.version = "v17.0"
@@ -185,9 +179,7 @@ class WhatsApp:
 
 
 class WaPhraseMessage:
-    """
-    Incoming Webhook Message Handler
-    """
+    """Incoming Webhook Message Handler"""
 
     def __init__(self, inbound_obj):
         self._inbound_obj = inbound_obj
@@ -230,56 +222,35 @@ class WaPhraseMessage:
 
     @property
     def mobile_number(self) -> str:
-        """
-
-        @return: Mobile number of the WA user
-        """
+        """@return: Mobile number of the WA user"""
         return self._mobile_number
 
     @property
     def msg_id(self) -> str:
-        """
-
-        @return: Received message ID
-        """
+        """@return: Received message ID"""
         return self._msg_id
 
     @property
     def msg_text(self) -> str:
-        """
-
-        @return: Received message content
-        """
+        """@return: Received message content"""
         return self._received_msg_text
 
     @property
     def wa_id(self) -> str:
-        """
-
-        @return: Mobile number unique ID
-        """
+        """@return: Mobile number unique ID"""
         return self._wa_id
 
     @property
     def msg_status(self) -> str:
-        """
-
-        @return: Status of the inbound or outbound message status
-        """
+        """@return: Status of the inbound or outbound message status"""
         return self._status
 
     @property
     def ibm_type(self) -> str:
-        """
-
-        @return: Type of webhook calls
-        """
+        """@return: Type of webhook calls"""
         return self._ibm_type
 
     @property
     def profile_name(self) -> str:
-        """
-
-        @return: Name of the WA Users
-        """
+        """@return: Name of the WA Users"""
         return self._profile_name

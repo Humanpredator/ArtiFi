@@ -1,6 +1,4 @@
-"""
-YouTube Studio API Unofficial
-"""
+"""YouTube Studio API Unofficial"""
 import asyncio
 import hashlib
 import time
@@ -14,9 +12,7 @@ from artifi.utils import get_nested_key
 
 
 class StudioVideoObj:
-    """
-    Video Details
-    """
+    """Video Details"""
 
     def __init__(self, video: dict):
         self._video = video
@@ -182,9 +178,7 @@ class StudioVideoObj:
 
 
 class StudioVideoClaimsObj:
-    """
-    Video Copyright Claims Details
-    """
+    """Video Copyright Claims Details"""
 
     def __init__(self, claim: dict):
         self._claim = claim

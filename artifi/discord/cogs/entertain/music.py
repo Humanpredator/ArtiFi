@@ -49,10 +49,7 @@ class PlayerControl(View):
         return "Stopped"
 
     async def verify_message(self):
-        """
-
-        @return:
-        """
+        """@return:"""
         try:
             return await self.channel.fetch_message(self.message.id)
         except NotFound:
@@ -178,10 +175,7 @@ class Music(Cog):
     """Play music using lavalink server"""
 
     def __init__(self, bot):
-        """
-
-        @param bot:
-        """
+        """@param bot:"""
         self._bot: Discord = bot
         self.music_player: dict = {}
 
@@ -282,8 +276,5 @@ class Music(Cog):
 
 
 async def setup(bot):
-    """
-
-    @param bot:
-    """
+    """@param bot:"""
     await bot.add_cog(Music(bot))

@@ -1,3 +1,1 @@
-"""
-Misc Function for Discord
-"""
+"""Misc Function for Discord"""

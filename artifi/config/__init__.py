@@ -1,6 +1,4 @@
-"""
-Env Config Setter
-"""
+"""Env Config Setter"""
 
 import importlib.util
 import os
@@ -71,10 +69,7 @@ class BaseConfig:
         f.close()
 
     def get_root_path(self) -> str:
-        """
-
-        @return: path of the import_name
-        """
+        """@return: path of the import_name"""
         if not self._import_name:
             raise Exception("App Name Required")
         mod = sys.modules.get(self._import_name)

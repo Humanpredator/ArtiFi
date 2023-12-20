@@ -1,6 +1,4 @@
-"""
-Collection Of Unofficial Instagram API's
-"""
+"""Collection Of Unofficial Instagram API's"""
 import os
 import pickle
 import time
@@ -23,9 +21,7 @@ from artifi.instagram.ext import CustomContext
 
 
 class Instagram(Instaloader):
-    """
-    Download instagram user post and highlights using Instaloader
-    """
+    """Download instagram user post and highlights using Instaloader"""
 
     def __init__(self, context, ig_username, ig_password):
         """

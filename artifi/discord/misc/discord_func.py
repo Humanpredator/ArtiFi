@@ -1,6 +1,4 @@
-"""
-Messing Function
-"""
+"""Messing Function"""
 from pathlib import Path
 from typing import List, Union
 
