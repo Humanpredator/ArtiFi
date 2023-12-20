@@ -2,7 +2,7 @@ import logging
 import os
 import sys
 from datetime import datetime, timedelta
-from typing import Optional, List
+from typing import List, Optional
 
 import pytz
 from apscheduler.jobstores.memory import MemoryJobStore
@@ -41,9 +41,7 @@ class Artifi(BaseConfig):
     def create_db_table(self, tables: List[dbmodel]):
         if tables:
             for table in tables:
-                table(self).__table__.create(
-                    self.db_engine, checkfirst=True
-                )
+                table(self).__table__.create(self.db_engine, checkfirst=True)
         return True
 
     def _create_directory(self):
@@ -64,14 +62,14 @@ class Artifi(BaseConfig):
         return session_maker()
 
     def add_scheduler(
-            self,
-            function: func,
-            start_time: Optional[str] = None,
-            end_time: Optional[str] = None,
-            interval: Optional[int] = None,
-            start_date: Optional[str] = None,
-            end_date: Optional[str] = None,
-            allow_duplicate: bool = True,
+        self,
+        function: func,
+        start_time: Optional[str] = None,
+        end_time: Optional[str] = None,
+        interval: Optional[int] = None,
+        start_date: Optional[str] = None,
+        end_date: Optional[str] = None,
+        allow_duplicate: bool = True,
     ):
         defaults = {
             "start_date": datetime.now().strftime("%Y-%m-%d"),
@@ -83,8 +81,8 @@ class Artifi(BaseConfig):
         start_date, end_date, start_time, end_time, interval = (
             value if value is not None else defaults[key]
             for key, value in zip(
-            defaults.keys(), (start_date, end_date, start_time, end_time, interval)
-        )
+                defaults.keys(), (start_date, end_date, start_time, end_time, interval)
+            )
         )
         tz = pytz.timezone("asia/kolkata")
         start_datetime = tz.localize(

@@ -1,6 +1,6 @@
 import os
 import time
-from typing import Any, Optional, List
+from typing import Any, List, Optional
 
 import discord
 import wavelink
@@ -13,12 +13,12 @@ from artifi.discord.misc.discord_model import DiscordSudoModel
 
 class Discord(Bot):
     def __init__(
-            self,
-            context,
-            command_prefix="!",
-            *,
-            intents=discord.Intents.all(),
-            **options: Any,
+        self,
+        context,
+        command_prefix="!",
+        *,
+        intents=discord.Intents.all(),
+        **options: Any,
     ):
         super().__init__(command_prefix, intents=intents, **options)
         self.bot_start_time = time.time()

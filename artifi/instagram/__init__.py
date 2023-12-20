@@ -123,12 +123,12 @@ class Instagram(Instaloader):
         for user_highlight in self.get_highlights(profile):
             user_highlight: Highlight = user_highlight
             album_name = str(user_highlight.title)
-            album_path = os.path.join(highlight_path, self.sanitize_folder_name(album_name))
+            album_path = os.path.join(
+                highlight_path, self.sanitize_folder_name(album_name)
+            )
             os.makedirs(album_path, exist_ok=True)
             for highlights in user_highlight.get_items():
-                self.filename_pattern = self.file_name(
-                    profile.full_name, highlights
-                )
+                self.filename_pattern = self.file_name(profile.full_name, highlights)
                 time.sleep(2)
                 self.download_storyitem(highlights, target=Path(album_path))
             self.acontext.logger.info(f"{album_name} Was Downloaded...!")
