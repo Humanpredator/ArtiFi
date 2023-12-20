@@ -17,7 +17,7 @@ class Google:
 
     def __init__(self, context):
         """
-        
+
         @param context: pass :class Artifi
         """
         self.context: Artifi = context

@@ -51,8 +51,8 @@ class Shell(Cog):
                 if len(stdout) + len(stderr) > 2000:
                     # Output is too long, save it to a file
                     with open(
-                            os.path.join(self._bot.context.directory, "shell_out.txt"),
-                            "w",
+                        os.path.join(self._bot.context.directory, "shell_out.txt"),
+                        "w",
                     ) as f:
                         f.write(
                             f"**** Execution Failed ****\n{stderr}\n\n**** Execution Success ****\n{stdout}"
