@@ -1,6 +1,4 @@
-"""
-Collection Of Unofficial Instagram API's
-"""
+"""Collection Of Unofficial Instagram API's"""
 import os
 import pickle
 import time
@@ -23,9 +21,7 @@ from artifi.instagram.ext import CustomContext
 
 
 class Instagram(Instaloader):
-    """
-    Download instagram user post and highlights using Instaloader
-    """
+    """Download instagram user post and highlights using Instaloader"""
 
     def __init__(self, context, ig_username, ig_password):
         """
@@ -170,12 +166,12 @@ class Instagram(Instaloader):
         for user_highlight in self.get_highlights(profile):
             user_highlight: Highlight = user_highlight
             album_name = str(user_highlight.title)
-            album_path = os.path.join(highlight_path, self.sanitize_folder_name(album_name))
+            album_path = os.path.join(
+                highlight_path, self.sanitize_folder_name(album_name)
+            )
             os.makedirs(album_path, exist_ok=True)
             for highlights in user_highlight.get_items():
-                self.filename_pattern = self.file_name(
-                    profile.full_name, highlights
-                )
+                self.filename_pattern = self.file_name(profile.full_name, highlights)
                 time.sleep(2)
                 self.download_storyitem(highlights, target=Path(album_path))
             self.acontext.logger.info(f"{album_name} Was Downloaded...!")

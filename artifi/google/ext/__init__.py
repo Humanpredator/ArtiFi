@@ -1,6 +1,4 @@
-"""
-Ext for Google
-"""
+"""Ext for Google"""
 import json
 import os
 import time
@@ -13,9 +11,7 @@ from artifi.google import Google
 
 
 class GoogleWebSession(Google):
-    """
-    To use the Google web API unofficial method using web session and playwright
-    """
+    """To use the Google web API unofficial method using web session and playwright"""
 
     def __init__(self, context, email, password, headless, user_agent):
         """

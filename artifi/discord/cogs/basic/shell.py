@@ -12,10 +12,7 @@ class Shell(Cog):
     """Execute the commands in terminal"""
 
     def __init__(self, bot):
-        """
-
-        @param bot:
-        """
+        """@param bot:"""
         self._bot: Discord = bot
 
     @command(
@@ -51,8 +48,8 @@ class Shell(Cog):
                 if len(stdout) + len(stderr) > 2000:
                     # Output is too long, save it to a file
                     with open(
-                            os.path.join(self._bot.context.directory, "shell_out.txt"),
-                            "w",
+                        os.path.join(self._bot.context.directory, "shell_out.txt"),
+                        "w",
                     ) as f:
                         f.write(
                             f"**** Execution Failed ****\n{stderr}\n\n**** Execution Success ****\n{stdout}"
@@ -73,8 +70,5 @@ class Shell(Cog):
 
 
 async def setup(bot):
-    """
-
-    @param bot:
-    """
+    """@param bot:"""
     await bot.add_cog(Shell(bot))

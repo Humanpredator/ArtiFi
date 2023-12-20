@@ -1,6 +1,4 @@
-"""
-Manager user to invoke the command
-"""
+"""Manager user to invoke the command"""
 from datetime import datetime
 
 from discord import Embed
@@ -12,10 +10,7 @@ from artifi.discord.misc.discord_func import send_message
 
 class Auth(Cog):
     def __init__(self, bot):
-        """
-
-        @param bot:
-        """
+        """@param bot:"""
         super().__init__()
         self._bot: Discord = bot
 
@@ -99,8 +94,5 @@ class Auth(Cog):
 
 
 async def setup(bot):
-    """
-
-    @param bot:
-    """
+    """@param bot:"""
     await bot.add_cog(Auth(bot))

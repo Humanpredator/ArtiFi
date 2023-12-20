@@ -1,6 +1,4 @@
-"""
-Collection of Cloudflare API's
-"""
+"""Collection of Cloudflare API's"""
 
 from requests import Session
 
@@ -8,9 +6,7 @@ from artifi import Artifi
 
 
 class CloudFlare:
-    """
-    Base Class for All Cloudflare App's
-    """
+    """Base Class for All Cloudflare App's"""
 
     def __init__(self, context):
         """
@@ -28,9 +24,7 @@ class CloudFlare:
 
     @property
     def _cfrequest(self) -> Session:
-        """
-        @return: return the requests session
-        """
+        """@return: return the requests session"""
         _session = Session()
         _session.headers = {
             "Content-Type": "application/json",

@@ -1,11 +1,9 @@
-"""
-Artifi Main
-"""
+"""Artifi Main"""
 import logging
 import os
 import sys
 from datetime import datetime, timedelta
-from typing import Optional, List
+from typing import List, Optional
 
 import pytz
 from apscheduler.jobstores.memory import MemoryJobStore
@@ -17,6 +15,7 @@ from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session, declarative_base, sessionmaker
 
 from artifi.config.ext.logger import LogConfig
+
 from .config import BaseConfig
 
 
@@ -25,6 +24,7 @@ class Artifi(BaseConfig):
     Needs to be initiated first and required by all other class
     example_usage: arti=Artifi(__name__)
     """
+
     dbmodel = declarative_base()
 
     def __init__(self, import_name, config_path: Optional[None | str] = None):
@@ -58,9 +58,7 @@ class Artifi(BaseConfig):
         """
         if tables:
             for table in tables:
-                table(self).__table__.create(
-                    self.db_engine, checkfirst=True
-                )
+                table(self).__table__.create(self.db_engine, checkfirst=True)
         return True
 
     def _create_directory(self):
@@ -73,10 +71,7 @@ class Artifi(BaseConfig):
         return working_directory
 
     def _db_engine(self) -> Engine:
-        """
-
-        @return connect to db and return the connection engine:
-        """
+        """@return connect to db and return the connection engine:"""
         try:
             engine = create_engine(self.SQLALCHEMY_DATABASE_URI, echo=False)
         except SQLAlchemyError as e:
@@ -85,22 +80,19 @@ class Artifi(BaseConfig):
         return engine
 
     def db_session(self) -> Session:
-        """
-
-        @return: New DB session
-        """
+        """@return: New DB session"""
         session_maker = sessionmaker(bind=self.db_engine)
         return session_maker()
 
     def add_scheduler(
-            self,
-            function: func,
-            start_time: Optional[str] = None,
-            end_time: Optional[str] = None,
-            interval: Optional[int] = None,
-            start_date: Optional[str] = None,
-            end_date: Optional[str] = None,
-            allow_duplicate: bool = True,
+        self,
+        function: func,
+        start_time: Optional[str] = None,
+        end_time: Optional[str] = None,
+        interval: Optional[int] = None,
+        start_date: Optional[str] = None,
+        end_date: Optional[str] = None,
+        allow_duplicate: bool = True,
     ):
         """
         @param function: A Callable function
@@ -124,7 +116,9 @@ class Artifi(BaseConfig):
         }
         start_date, end_date, start_time, end_time, interval = (
             value if value is not None else defaults[key]
-            for key, value in zip(defaults.keys(), (start_date, end_date, start_time, end_time, interval))
+            for key, value in zip(
+                defaults.keys(), (start_date, end_date, start_time, end_time, interval)
+            )
         )
         tz = pytz.timezone("asia/kolkata")
         start_datetime = tz.localize(
@@ -157,8 +151,5 @@ class Artifi(BaseConfig):
 
     @property
     def module_path(self):
-        """
-
-        @return package path:
-        """
+        """@return package path:"""
         return self._module_path

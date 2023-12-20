@@ -1,6 +1,4 @@
-"""
-Google People API
-"""
+"""Google People API"""
 from typing import Generator, Optional
 
 from googleapiclient.discovery import build
@@ -27,9 +25,7 @@ class GooglePeople(Google):
         self._service = build("people", "v1", credentials=self._creds)
 
     def get_contacts(self) -> Generator:
-        """
-        fetch all available contacts
-        """
+        """fetch all available contacts"""
         results = (
             self._service.people()
             .connections()
@@ -46,9 +42,7 @@ class GooglePeople(Google):
 
 
 class GoogleContactObj:
-    """
-    Contacts Details
-    """
+    """Contacts Details"""
 
     def __init__(self, obj):
         self._contact_obj: Optional[dict] = obj

@@ -1,3 +1,1 @@
-"""
-Ext for Artifi Config
-"""
+"""Ext for Artifi Config"""

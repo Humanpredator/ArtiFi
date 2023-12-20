@@ -11,10 +11,7 @@ class Ping(Cog):
     """Get network Latency between you and server"""
 
     def __init__(self, bot):
-        """
-
-        @param bot:
-        """
+        """@param bot:"""
         self._bot: Discord = bot
 
     @command("ping", help="Calculate The Latency Of The Server.")
@@ -33,8 +30,5 @@ class Ping(Cog):
 
 
 async def setup(bot):
-    """
-
-    @param bot:
-    """
+    """@param bot:"""
     await bot.add_cog(Ping(bot))

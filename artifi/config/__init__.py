@@ -1,6 +1,4 @@
-"""
-Env Config Setter
-"""
+"""Env Config Setter"""
 
 import importlib.util
 import os
@@ -28,7 +26,7 @@ class BaseConfig:
         if not self._env_path:
             self._env_path = os.path.join(self.get_root_path(), "config.env")
         if (file_state := os.path.exists(self._env_path)) and not load_dotenv(
-                self._env_path
+            self._env_path
         ):
             raise ConfigFileError("Failed to Load Config.env File")
         """Basic Config"""
@@ -71,10 +69,7 @@ class BaseConfig:
         f.close()
 
     def get_root_path(self) -> str:
-        """
-
-        @return: path of the import_name
-        """
+        """@return: path of the import_name"""
         if not self._import_name:
             raise Exception("App Name Required")
         mod = sys.modules.get(self._import_name)

@@ -1,11 +1,11 @@
-"""
-Common function used throughout the package
-"""
+"""Common function used throughout the package"""
 
-from typing import Union, List
+from typing import List, Union
 
 
-def get_nested_key(d: Union[dict, List[dict]], key: str, default="UNKNOWN") -> Union[str, dict, List[str]]:
+def get_nested_key(
+    d: Union[dict, List[dict]], key: str, default="UNKNOWN"
+) -> Union[str, dict, List[str]]:
     """
     Used to Get the specific key value from dict junk
     @param d: original dict
@@ -75,7 +75,7 @@ def readable_size(size_in_bytes) -> str:
 
 def speed_convert(size):
     """Hi human, you can't read bytes?"""
-    power = 2 ** 10
+    power = 2**10
     zero = 0
     units = {0: "", 1: "Kb/s", 2: "MB/s", 3: "Gb/s", 4: "Tb/s"}
     while size > power:

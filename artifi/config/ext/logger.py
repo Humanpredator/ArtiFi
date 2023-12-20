@@ -1,6 +1,4 @@
-"""
-Artifi Logging Configuration
-"""
+"""Artifi Logging Configuration"""
 import faulthandler
 import logging
 import os
@@ -8,15 +6,10 @@ import sys
 
 
 class LogConfig:
-    """
-    Logger configuration
-    """
+    """Logger configuration"""
 
     def __init__(self, context):
-        """
-
-        @param context: pass :class Artifi
-        """
+        """@param context: pass :class Artifi"""
         self.context = context
         self._file_name = os.path.join(self.context.cwd, "artifi.log")
         faulthandler.enable(file=sys.stderr)

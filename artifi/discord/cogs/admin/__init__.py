@@ -1,3 +1,1 @@
-"""
-Admin Cogs
-"""
+"""Admin Cogs"""

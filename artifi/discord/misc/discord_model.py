@@ -1,6 +1,4 @@
-"""
-Discord Sudo User Model
-"""
+"""Discord Sudo User Model"""
 from datetime import datetime
 
 from sqlalchemy import INTEGER, TIMESTAMP, VARCHAR, Column
@@ -9,9 +7,7 @@ from artifi import Artifi
 
 
 class DiscordSudoModel(Artifi.dbmodel):
-    """
-    Manager Sudo Users
-    """
+    """Manager Sudo Users"""
 
     def __init__(self, context):
         self.context: Artifi = context

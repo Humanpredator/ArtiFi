@@ -1,6 +1,4 @@
-"""
-Collection Of Whatsapp Apps
-"""
+"""Collection Of Whatsapp Apps"""
 from datetime import datetime
 from typing import Callable
 
@@ -13,14 +11,10 @@ from artifi.whatsapp.ext.wam_model import WaMessageModel, WaProfileModel
 
 
 class WhatsApp:
-    """
-    Whatsapp Cloud API's
-    """
+    """Whatsapp Cloud API's"""
 
     def __init__(self, context: Artifi):
-        """
-        @param context: :class Artifi
-        """
+        """@param context: :class Artifi"""
         self.context = context
         self.base_url = "https://graph.facebook.com"
         self.version = "v17.0"
@@ -117,7 +111,9 @@ class WhatsApp:
                                 .first()
                             )
                             if not wam:
-                                self.context.logger.info("No Message Found, Skipping...!")
+                                self.context.logger.info(
+                                    "No Message Found, Skipping...!"
+                                )
                             else:
                                 wam.wa_profile_pid = profile.wa_profile_pid
                                 wam.wa_msg_id = data.msg_id
@@ -136,8 +132,8 @@ class WhatsApp:
                 challenge = request.args.get("hub.challenge")
                 if mode and token:
                     if (
-                            mode == "subscribe"
-                            and token == self.context.WHATSAPP_WEBHOOK_SECRET
+                        mode == "subscribe"
+                        and token == self.context.WHATSAPP_WEBHOOK_SECRET
                     ):
                         return challenge, 200
                     return jsonify("Unauthorized"), 403
@@ -185,9 +181,7 @@ class WhatsApp:
 
 
 class WaPhraseMessage:
-    """
-    Incoming Webhook Message Handler
-    """
+    """Incoming Webhook Message Handler"""
 
     def __init__(self, inbound_obj):
         self._inbound_obj = inbound_obj
@@ -205,13 +199,13 @@ class WaPhraseMessage:
             if (changes := entry[0].get("changes", [])) and isinstance(changes, list):
                 if (value := changes[0].get("value", {})) and isinstance(value, dict):
                     if (contacts := value.get("contacts", [])) and isinstance(
-                            contacts, list
+                        contacts, list
                     ):
                         self._profile_name = contacts[0].get("profile").get("name")
                         self._wa_id = contacts[0].get("wa_id")
 
                     if (status := value.get("statuses", [])) and isinstance(
-                            contacts, list
+                        contacts, list
                     ):
                         self._wa_id = status[0].get("recipient_id")
                         self._status = status[0].get("status")
@@ -219,7 +213,7 @@ class WaPhraseMessage:
                         self._ibm_type = "STS"
 
                     if (messages := value.get("messages", [])) and isinstance(
-                            messages, list
+                        messages, list
                     ):
                         if text := messages[0].get("text", {}).get("body", ""):
                             self._mobile_number = messages[0].get("from", "")
@@ -230,56 +224,35 @@ class WaPhraseMessage:
 
     @property
     def mobile_number(self) -> str:
-        """
-
-        @return: Mobile number of the WA user
-        """
+        """@return: Mobile number of the WA user"""
         return self._mobile_number
 
     @property
     def msg_id(self) -> str:
-        """
-
-        @return: Received message ID
-        """
+        """@return: Received message ID"""
         return self._msg_id
 
     @property
     def msg_text(self) -> str:
-        """
-
-        @return: Received message content
-        """
+        """@return: Received message content"""
         return self._received_msg_text
 
     @property
     def wa_id(self) -> str:
-        """
-
-        @return: Mobile number unique ID
-        """
+        """@return: Mobile number unique ID"""
         return self._wa_id
 
     @property
     def msg_status(self) -> str:
-        """
-
-        @return: Status of the inbound or outbound message status
-        """
+        """@return: Status of the inbound or outbound message status"""
         return self._status
 
     @property
     def ibm_type(self) -> str:
-        """
-
-        @return: Type of webhook calls
-        """
+        """@return: Type of webhook calls"""
         return self._ibm_type
 
     @property
     def profile_name(self) -> str:
-        """
-
-        @return: Name of the WA Users
-        """
+        """@return: Name of the WA Users"""
         return self._profile_name

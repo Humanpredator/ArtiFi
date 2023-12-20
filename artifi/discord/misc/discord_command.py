@@ -1,13 +1,10 @@
-"""
-Override the Default Help Command
-"""
+"""Override the Default Help Command"""
 import discord
 from discord.ext.commands import HelpCommand
 
 
 class MyHelpCommand(HelpCommand):
     def __init__(self):
-
         super().__init__()
 
     async def send_bot_help(self, mapping):

@@ -11,15 +11,10 @@ from artifi.utils import speed_convert
 
 
 class NetworkTest(Cog):
-    """
-    To Test the Network Speed
-    """
+    """To Test the Network Speed"""
 
     def __init__(self, bot):
-        """
-
-        @param bot:
-        """
+        """@param bot:"""
         self._bot: Discord = bot
 
     @command("speedtest", help="Check The Internet Speed Of The Hosted Server.")
@@ -56,8 +51,5 @@ ISP Rating: ***{result['client']['isprating']}***
 
 
 async def setup(bot):
-    """
-
-    @param bot:
-    """
+    """@param bot:"""
     await bot.add_cog(NetworkTest(bot))
