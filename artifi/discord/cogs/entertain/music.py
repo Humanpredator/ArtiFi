@@ -39,7 +39,7 @@ class PlayerControl(View):
 
     def _vc_status(self):
         """
-        
+
         @return:
         """
         if self.voice_client.paused:
@@ -63,8 +63,8 @@ class PlayerControl(View):
         @return:
         """
         if (
-                not (message := await self.verify_message())
-                or not self.voice_client.connected
+            not (message := await self.verify_message())
+            or not self.voice_client.connected
         ):
             self._bot.context.logger.info(
                 f"{self._control_id}: Music player Status Updating Task Disposed...!"
@@ -266,8 +266,8 @@ class Music(Cog):
         for track in tracks:
             await music_player.voice_client.queue.put_wait(track)
             if (
-                    not music_player.voice_client.playing
-                    and not music_player.voice_client.paused
+                not music_player.voice_client.playing
+                and not music_player.voice_client.paused
             ):
                 await music_player.voice_client.play(track, add_history=True)
 
