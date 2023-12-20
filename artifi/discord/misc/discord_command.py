@@ -4,9 +4,7 @@ from discord.ext.commands import HelpCommand
 
 
 class MyHelpCommand(HelpCommand):
-    """
-    Custom Help Command
-    """
+    """Custom Help Command"""
 
     def __init__(self):
         super().__init__()

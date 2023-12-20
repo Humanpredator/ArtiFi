@@ -75,10 +75,7 @@ class Discord(Bot):
         return bool(0)
 
     async def _load_default(self) -> None:
-        """
-
-        @return:
-        """
+        """@return:"""
         if self.load_default:
             self.context.create_db_table([DiscordSudoModel])
             self.context.logger.info("Loading Default Cogs, Please Wait...!")

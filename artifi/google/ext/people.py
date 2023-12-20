@@ -45,10 +45,7 @@ class GoogleContactObj:
     """Contacts Details"""
 
     def __init__(self, obj):
-        """
-        
-        @param obj:
-        """
+        """@param obj:"""
         self._contact_obj: Optional[dict] = obj
         self._profile_name: Optional[str] = None
         self._profile_dob: Optional[str] = None

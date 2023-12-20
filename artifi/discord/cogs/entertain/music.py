@@ -38,10 +38,7 @@ class PlayerControl(View):
         )
 
     def _vc_status(self):
-        """
-        
-        @return:
-        """
+        """@return:"""
         if self.voice_client.paused:
             return "Paused"
         if self.voice_client.playing:

@@ -37,10 +37,7 @@ class CustomContext(InstaloaderContext):
             self.error_log.append(msg)
 
     def close(self):
-        """
-
-        @return:
-        """
+        """@return:"""
         if self.error_log and not self.quiet:
             for err in self.error_log:
                 self.acontext.logger.error(err)

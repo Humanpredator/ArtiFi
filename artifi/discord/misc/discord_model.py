@@ -10,10 +10,7 @@ class DiscordSudoModel(Artifi.dbmodel):
     """Manager Sudo Users"""
 
     def __init__(self, context):
-        """
-
-        @param context:
-        """
+        """@param context:"""
         self.context: Artifi = context
 
     __tablename__ = "discord_authorize"

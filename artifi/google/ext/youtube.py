@@ -14,10 +14,7 @@ class StudioVideoObj:
     """Video Details"""
 
     def __init__(self, video: dict):
-        """
-
-        @param video:
-        """
+        """@param video:"""
         self._video = video
         self._video_id: Optional[str] = None
         self._channel_id: Optional[str] = None
@@ -208,10 +205,7 @@ class StudioVideoClaimsObj:
     """Video Copyright Claims Details"""
 
     def __init__(self, claim: dict):
-        """
-
-        @param claim:
-        """
+        """@param claim:"""
         self._claim = claim
         self._claim_id: Optional[str] = None
         self._video_id: Optional[str] = None
@@ -400,10 +394,7 @@ class GoogleYouTubeStudio(GoogleWebSession):
             self._session_token = data.get("sessionToken")
 
     def _default_header(self):
-        """
-
-        @return:
-        """
+        """@return:"""
         required_cookie_field = [
             "__Secure-3PAPISID",
             "__Secure-3PSIDTS",
@@ -420,10 +411,7 @@ class GoogleYouTubeStudio(GoogleWebSession):
         return "; ".join(set(cookie_field)), sapid_value
 
     def _web_request(self) -> Session:
-        """
-
-        @return:
-        """
+        """@return:"""
         cp_url = self.fetch_save_gsession(
             "https://studio.youtube.com/", self._intercept_response
         )

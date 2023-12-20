@@ -64,10 +64,7 @@ class WhatsApp:
         """
 
         def _flask_endpoint():
-            """
-
-            @return:
-            """
+            """@return:"""
             if request.method == "POST":
                 data: WaPhraseMessage = WaPhraseMessage(request.json)
                 if data.ibm_type == "MSG":
@@ -182,10 +179,7 @@ class WhatsApp:
 
     @property
     def _wa_request(self) -> Session:
-        """
-
-        @return:
-        """
+        """@return:"""
         _session = Session()
         _session.headers = {
             "Content-Type": "application/json",
@@ -198,10 +192,7 @@ class WaPhraseMessage:
     """Incoming Webhook Message Handler"""
 
     def __init__(self, inbound_obj):
-        """
-
-        @param inbound_obj:
-        """
+        """@param inbound_obj:"""
         self._inbound_obj = inbound_obj
         self._profile_name = None
         self._wa_id = None
@@ -213,10 +204,7 @@ class WaPhraseMessage:
         self._phrase_webhook()
 
     def _phrase_webhook(self):
-        """
-
-        @return:
-        """
+        """@return:"""
         if (entry := self._inbound_obj.get("entry", [])) and isinstance(entry, list):
             if (changes := entry[0].get("changes", [])) and isinstance(changes, list):
                 if (value := changes[0].get("value", {})) and isinstance(value, dict):

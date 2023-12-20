@@ -58,10 +58,7 @@ class BaseConfig:
             )
 
     def _generate_config_file(self) -> None:
-        """
-
-        @return:
-        """
+        """@return:"""
         keys = [
             f"{config_key} = ''"
             for config_key in list(self.__dict__.keys())
