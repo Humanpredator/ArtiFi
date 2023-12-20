@@ -26,7 +26,7 @@ class BaseConfig:
         if not self._env_path:
             self._env_path = os.path.join(self.get_root_path(), "config.env")
         if (file_state := os.path.exists(self._env_path)) and not load_dotenv(
-                self._env_path
+            self._env_path
         ):
             raise ConfigFileError("Failed to Load Config.env File")
         """Basic Config"""
@@ -58,10 +58,7 @@ class BaseConfig:
             )
 
     def _generate_config_file(self) -> None:
-        """
-
-        @return:
-        """
+        """@return:"""
         keys = [
             f"{config_key} = ''"
             for config_key in list(self.__dict__.keys())

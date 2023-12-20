@@ -64,10 +64,7 @@ class WhatsApp:
         """
 
         def _flask_endpoint():
-            """
-
-            @return:
-            """
+            """@return:"""
             if request.method == "POST":
                 data: WaPhraseMessage = WaPhraseMessage(request.json)
                 if data.ibm_type == "MSG":
@@ -136,8 +133,8 @@ class WhatsApp:
                 challenge = request.args.get("hub.challenge")
                 if mode and token:
                     if (
-                            mode == "subscribe"
-                            and token == self.context.WHATSAPP_WEBHOOK_SECRET
+                        mode == "subscribe"
+                        and token == self.context.WHATSAPP_WEBHOOK_SECRET
                     ):
                         return challenge, 200
                     return jsonify("Unauthorized"), 403
@@ -182,10 +179,7 @@ class WhatsApp:
 
     @property
     def _wa_request(self) -> Session:
-        """
-
-        @return:
-        """
+        """@return:"""
         _session = Session()
         _session.headers = {
             "Content-Type": "application/json",
@@ -198,10 +192,7 @@ class WaPhraseMessage:
     """Incoming Webhook Message Handler"""
 
     def __init__(self, inbound_obj):
-        """
-
-        @param inbound_obj:
-        """
+        """@param inbound_obj:"""
         self._inbound_obj = inbound_obj
         self._profile_name = None
         self._wa_id = None
@@ -213,21 +204,18 @@ class WaPhraseMessage:
         self._phrase_webhook()
 
     def _phrase_webhook(self):
-        """
-
-        @return:
-        """
+        """@return:"""
         if (entry := self._inbound_obj.get("entry", [])) and isinstance(entry, list):
             if (changes := entry[0].get("changes", [])) and isinstance(changes, list):
                 if (value := changes[0].get("value", {})) and isinstance(value, dict):
                     if (contacts := value.get("contacts", [])) and isinstance(
-                            contacts, list
+                        contacts, list
                     ):
                         self._profile_name = contacts[0].get("profile").get("name")
                         self._wa_id = contacts[0].get("wa_id")
 
                     if (status := value.get("statuses", [])) and isinstance(
-                            contacts, list
+                        contacts, list
                     ):
                         self._wa_id = status[0].get("recipient_id")
                         self._status = status[0].get("status")
@@ -235,7 +223,7 @@ class WaPhraseMessage:
                         self._ibm_type = "STS"
 
                     if (messages := value.get("messages", [])) and isinstance(
-                            messages, list
+                        messages, list
                     ):
                         if text := messages[0].get("text", {}).get("body", ""):
                             self._mobile_number = messages[0].get("from", "")
