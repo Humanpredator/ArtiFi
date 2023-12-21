@@ -19,15 +19,16 @@ class GoogleWebSession(Google):
         @param context: Pass :class Artifi
         @param email: Google email to be logged in
         @param password: Google email password
-        @param headless: Set 'True' to do on background, 'False' to open browser window
-        @param user_agent: set useragent compatible with chrome drive which you have loaded in
+        @param headless: Set 'True' to do on background, 'False' to open browser
+        @param user_agent: set user agent compatible with chrome drive
         """
         super().__init__(context)
         self.context: Artifi = context
         self._chrome_path = self.context.CHROMEDRIVE_PATH
         self._headless = headless
         self._email: str = email
-        self._session_path = os.path.join(self.context.directory, f"{self._email}.json")
+        self._session_path = os.path.join(self.context.directory,
+                                          f"{self._email}.json")
         self._password: str = password
         self._user_agent: str = user_agent
 
@@ -80,7 +81,8 @@ class GoogleWebSession(Google):
                 page.fill('input[type="email"]', f"{self._email}")
                 page.click("div#identifierNext")
 
-                page.wait_for_selector('input[type="password"]', state="visible")
+                page.wait_for_selector('input[type="password"]',
+                                       state="visible")
                 page.fill('input[type="password"]', f"{self._password}")
                 page.click("div#passwordNext")
                 time.sleep(5)

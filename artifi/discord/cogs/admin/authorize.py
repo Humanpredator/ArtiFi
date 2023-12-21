@@ -16,7 +16,7 @@ class Auth(Cog):
         super().__init__()
         self._bot: Discord = bot
 
-    @command("promote", help="Reply To The Message Of User, Who Want To Promote.")
+    @command("promote", help="Reply To The Message Of User, To Promote.")
     async def promote_user(self, ctx):
         """
 
@@ -26,8 +26,8 @@ class Auth(Cog):
         if not self._bot.owner_only(ctx):
             return await send_message(ctx, "Access Denied...!")
         if ctx.message.reference:
-            original_message = await ctx.fetch_message(ctx.message.reference.message_id)
-            original_author_id = original_message.author.id
+            og_message = await ctx.fetch_message(ctx.message.reference.message_id)
+            original_author_id = og_message.author.id
             with self._bot.context.db_session() as session:
                 user_data = (
                     session.query(DiscordSudoModel)
@@ -46,9 +46,9 @@ class Auth(Cog):
 
             await send_message(ctx, response)
         else:
-            await send_message(ctx, "Usage !promote reply to this to user...!")
+            await send_message(ctx, "Usage !promote reply to this to user!")
 
-    @command("demote", help="Reply To The Message Of User, Who Want To De-Promote.")
+    @command("demote", help="Reply To The Message Of User,To Demote.")
     async def demote_user(self, ctx):
         """
 
@@ -58,8 +58,8 @@ class Auth(Cog):
         if not self._bot.owner_only(ctx):
             return await send_message(ctx, "Access Denied...!")
         if ctx.message.reference:
-            original_message = await ctx.fetch_message(ctx.message.reference.message_id)
-            original_author_id = original_message.author.id
+            og_message = await ctx.fetch_message(ctx.message.reference.message_id)
+            original_author_id = og_message.author.id
             with self._bot.context.db_session() as session:
                 user_data = (
                     session.query(DiscordSudoModel)

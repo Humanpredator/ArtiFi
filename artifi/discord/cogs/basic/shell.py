@@ -16,7 +16,7 @@ class Shell(Cog):
         self._bot: Discord = bot
 
     @command(
-        "shell", help="Execute a command directly on the machine shell via the artifi."
+        "shell", help="Send Terminal Command To Execute On Machine."
     )
     async def shell_discord(self, ctx, *args):
         """
@@ -48,11 +48,13 @@ class Shell(Cog):
                 if len(stdout) + len(stderr) > 2000:
                     # Output is too long, save it to a file
                     with open(
-                        os.path.join(self._bot.context.directory, "shell_out.txt"),
-                        "w",
+                            os.path.join(self._bot.context.directory,
+                                         "shell_out.txt"),
+                            "w",
                     ) as f:
                         f.write(
-                            f"**** Execution Failed ****\n{stderr}\n\n**** Execution Success ****\n{stdout}"
+                            f"**** Execution Failed ****\n{stderr}\n\n**** \
+                                                    Execution Success ****\n{stdout}"
                         )
                     content += "Output is too long, saved to a file."
                     file = os.path.join(self._bot.context.directory, "shell_out.txt")

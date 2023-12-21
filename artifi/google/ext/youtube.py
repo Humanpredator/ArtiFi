@@ -238,7 +238,8 @@ class StudioVideoClaimsObj:
 
         start_time_minutes, start_time_seconds = divmod(start_time_seconds, 60)
         end_time_minutes, end_time_seconds = divmod(end_time_seconds, 60)
-        self._duration = f"{start_time_minutes:02d}:{start_time_seconds:02d} - {end_time_minutes:02d}:{end_time_seconds:02d}"
+        self._duration = f"{start_time_minutes:02d}:{start_time_seconds:02d} -\
+                            {end_time_minutes:02d}:{end_time_seconds:02d}"
 
         self._resolve_option = self._available_option(
             self._claim.get("nontakedownClaimActions", {}).get("options")
@@ -343,21 +344,23 @@ class GoogleYouTubeStudio(GoogleWebSession):
     """
 
     def __init__(
-        self,
-        context,
-        email: str,
-        password: str,
-        headless: bool = True,
-        param_key: str = "AIzaSyBUPetSUmoZL-OhlxA7wSac5XinrygCqMo",
-        user_agent: str = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36",
+            self,
+            context,
+            email: str,
+            password: str,
+            headless: bool = True,
+            param_key: str = "AIzaSyBUPetSUmoZL-OhlxA7wSac5XinrygCqMo",
+            user_agent: str = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) \
+                                AppleWebKit/537.36 (KHTML, like Gecko) \
+                                Chrome/119.0.0.0 Safari/537.36",
     ):
         """
 
         @param context: pass :class Artifi
         @param email: Google email address
         @param password: Google email password
-        @param headless: Set 'True' to do on background, 'False' to open browser window
-        @param user_agent: set useragent compatible with chrome drive which you have loaded in
+        @param headless: Set 'True' to do on background, 'False' to open browser
+        @param user_agent: set user agent compatible with chrome drive
         @param param_key: YouTube default param key
         """
         super().__init__(context, email, password, headless, user_agent)
@@ -388,7 +391,8 @@ class GoogleYouTubeStudio(GoogleWebSession):
         @param response:
         @return:
         """
-        session_token_url = f"https://studio.youtube.com/youtubei/v1/ars/grst?alt=json&key={self.auth_key}"
+        session_token_url = f"https://studio.youtube.com/\
+                                    youtubei/v1/ars/grst?alt=json&key={self.auth_key}"
         if session_token_url in response.url:
             data = response.json()
             self._session_token = data.get("sessionToken")
@@ -422,7 +426,8 @@ class GoogleYouTubeStudio(GoogleWebSession):
             raise ValueError("Failed To Get Valid Cookies")
         default_session.headers = {
             "authority": "api.youtube.com",
-            "authorization": f"SAPISIDHASH {asyncio.run(self._sapisid_hash(sapid_value))}",
+            "authorization": f"SAPISIDHASH \
+                                    {asyncio.run(self._sapisid_hash(sapid_value))}",
             "studio-type": "application/json",
             "cookie": header_cookie.strip(),
             "user-agent": self._user_agent,
@@ -560,7 +565,8 @@ class GoogleYouTubeStudio(GoogleWebSession):
                 },
             },
         }
-        _url = f"{self._base_url}/{self._service}/{self._version}/creator/list_creator_videos"
+        _url = f"{self._base_url}/{self._service}/{self._version}\
+                                        /creator/list_creator_videos"
         all_set = True
         while all_set:
             response = self._session.post(_url, json=payload)
@@ -581,7 +587,7 @@ class GoogleYouTubeStudio(GoogleWebSession):
                 yield StudioVideoObj(video_data)
 
     def list_video_claims(
-        self, video: StudioVideoObj
+            self, video: StudioVideoObj
     ) -> Optional[Generator[StudioVideoClaimsObj, None, None]]:
         """
         Show list claims on videos
@@ -621,7 +627,8 @@ class GoogleYouTubeStudio(GoogleWebSession):
             "criticalRead": False,
             "includeLicensingOptions": False,
         }
-        _url = f"{self._base_url}/{self._service}/{self._version}/creator/list_creator_received_claims?alt=json&key={self.auth_key}"
+        _url = f"{self._base_url}/{self._service}/{self._version}/creator\
+                        /list_creator_received_claims?alt=json&key={self.auth_key}"
 
         response = self._session.post(_url, json=payload)
         response.raise_for_status()
@@ -635,6 +642,7 @@ class GoogleYouTubeStudio(GoogleWebSession):
 
         for claim in data:
             yield StudioVideoClaimsObj(claim)
+        return None
 
     def _get_claimed_duration(self, claim: StudioVideoClaimsObj):
         """
@@ -642,7 +650,8 @@ class GoogleYouTubeStudio(GoogleWebSession):
         @param claim:
         @return:
         """
-        _url = f"{self._base_url}/{self._service}/{self._version}/copyright/get_creator_received_claim_matches"
+        _url = f"{self._base_url}/{self._service}/{self._version}/copyright\
+                                                /get_creator_received_claim_matches"
         payload = {
             "videoId": claim.video_id,
             "claimId": claim.claim_id,
@@ -695,7 +704,8 @@ class GoogleYouTubeStudio(GoogleWebSession):
         @return:
         """
         _url = (
-            f"{self._base_url}/{self._service}/{self._version}/video_editor/edit_video"
+            f"{self._base_url}/{self._service}/{self._version}\
+                                    /video_editor/edit_video"
         )
 
         payload = {
@@ -753,7 +763,8 @@ class GoogleYouTubeStudio(GoogleWebSession):
             return self.trim_out(claim)
         response.raise_for_status()
         res_data = response.json()
-        return {"status": res_data.get("executionStatus"), "code": "INITIATED_FOR_EDIT"}
+        return {"status": res_data.get("executionStatus"),
+                "code": "INITIATED_FOR_EDIT"}
 
     def mute_segment_songs(self, claim: StudioVideoClaimsObj, song_only=True):
         """
@@ -763,7 +774,8 @@ class GoogleYouTubeStudio(GoogleWebSession):
         @return:
         """
         _url = (
-            f"{self._base_url}/{self._service}/{self._version}/video_editor/edit_video"
+            f"{self._base_url}/{self._service}/{self._version}\
+                                    /video_editor/edit_video"
         )
 
         payload = {
@@ -824,4 +836,5 @@ class GoogleYouTubeStudio(GoogleWebSession):
 
         response.raise_for_status()
         res_data = response.json()
-        return {"status": res_data.get("executionStatus"), "code": "INITIATED_FOR_EDIT"}
+        return {"status": res_data.get("executionStatus"),
+                "code": "INITIATED_FOR_EDIT"}

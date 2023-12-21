@@ -11,7 +11,8 @@ from artifi.config.ext.exception import ConfigFileError
 
 class BaseConfig:
     """
-    The Class will be load the all the required environment config for the Project and cannot be called directly
+    The Class will be load the all the required environment config for the Project
+    and cannot be called directly
     """
 
     def __init__(self, import_name, config_path):
@@ -26,7 +27,7 @@ class BaseConfig:
         if not self._env_path:
             self._env_path = os.path.join(self.get_root_path(), "config.env")
         if (file_state := os.path.exists(self._env_path)) and not load_dotenv(
-            self._env_path
+                self._env_path
         ):
             raise ConfigFileError("Failed to Load Config.env File")
         """Basic Config"""
@@ -54,7 +55,8 @@ class BaseConfig:
         if not file_state:
             self._generate_config_file()
             raise Exception(
-                "config.env File Is Missing On Your Current Directory, So We Have Created One For you, Please Fill Up And Re-Run...!"
+                "config.env File Is Missing On Your Current Directory, So We Have \
+                                Created One For you, Please Fill Up And Re-Run...!"
             )
 
     def _generate_config_file(self) -> None:
@@ -94,6 +96,6 @@ class BaseConfig:
             filepath = getattr(mod, "__file__", None)
             if filepath is None:
                 raise RuntimeError(
-                    f" {self._import_name!r} the root path needs to be explicitly provided."
+                    f" {self._import_name!r} the root path needs to be provided."
                 )
         return os.path.dirname(os.path.abspath(filepath))

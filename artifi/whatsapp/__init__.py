@@ -48,15 +48,16 @@ class WhatsApp:
 
     def run_webhook(self, res_func: Callable, host="0.0.0.0", port=5000):
         """
-        @param res_func: a callable function used to make response of the incoming messages:
-                        :example def response(data):
-                                    response_content =  "Hai"
-                                    return msg_id, response_content
-                        :data = will be :class WaPhraseMessage object
-                        :msg_id = You can use :self.send_text_message() or your own function to send
-                            the :response_content to WA users, the :send_text_message() will return msg_id else pass
-                            random string
-                        :response_content = your response message
+        @param res_func: a callable function used to make custom response of the
+                        incoming messages:
+        :example def response(data):
+                    response_content =  "Hai"
+                    return msg_id, response_content
+        :data = will be :class WaPhraseMessage object
+        :msg_id = You can use :self.send_text_message() or your own function to send
+                  the :response_content to WA users, the :send_text_message() will
+                  return msg_id else pass  random string
+        :response_content = your response message
 
         @param host: Run on desired IP
         @param port: Run on desired PORT
@@ -133,8 +134,8 @@ class WhatsApp:
                 challenge = request.args.get("hub.challenge")
                 if mode and token:
                     if (
-                        mode == "subscribe"
-                        and token == self.context.WHATSAPP_WEBHOOK_SECRET
+                            mode == "subscribe"
+                            and token == self.context.WHATSAPP_WEBHOOK_SECRET
                     ):
                         return challenge, 200
                     return jsonify("Unauthorized"), 403
@@ -209,13 +210,13 @@ class WaPhraseMessage:
             if (changes := entry[0].get("changes", [])) and isinstance(changes, list):
                 if (value := changes[0].get("value", {})) and isinstance(value, dict):
                     if (contacts := value.get("contacts", [])) and isinstance(
-                        contacts, list
+                            contacts, list
                     ):
                         self._profile_name = contacts[0].get("profile").get("name")
                         self._wa_id = contacts[0].get("wa_id")
 
                     if (status := value.get("statuses", [])) and isinstance(
-                        contacts, list
+                            contacts, list
                     ):
                         self._wa_id = status[0].get("recipient_id")
                         self._status = status[0].get("status")
@@ -223,7 +224,7 @@ class WaPhraseMessage:
                         self._ibm_type = "STS"
 
                     if (messages := value.get("messages", [])) and isinstance(
-                        messages, list
+                            messages, list
                     ):
                         if text := messages[0].get("text", {}).get("body", ""):
                             self._mobile_number = messages[0].get("from", "")

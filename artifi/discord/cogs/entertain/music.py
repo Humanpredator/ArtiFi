@@ -11,7 +11,8 @@ from discord.ui import View, button
 from wavelink import AutoPlayMode, player
 
 from artifi.discord import Discord
-from artifi.discord.misc.discord_func import delete_message, edit_message, send_message
+from artifi.discord.misc.discord_func import (delete_message, edit_message,
+                                              send_message)
 
 
 class PlayerControl(View):
@@ -60,8 +61,8 @@ class PlayerControl(View):
         @return:
         """
         if (
-            not (message := await self.verify_message())
-            or not self.voice_client.connected
+                not (message := await self.verify_message())
+                or not self.voice_client.connected
         ):
             self._bot.context.logger.info(
                 f"{self._control_id}: Music player Status Updating Task Disposed...!"
@@ -85,7 +86,8 @@ class PlayerControl(View):
             embed.add_field(
                 name="Volume", value=f"{self.voice_client.volume}%", inline=True
             )
-            return await edit_message(message, embed=embed, markup=self, delete=_delete)
+            return await edit_message(message, embed=embed, markup=self,
+                                      delete=_delete)
 
     @button(label="Play/Pause", style=ButtonStyle.green)
     async def play_button(self, *args):
@@ -169,7 +171,7 @@ class PlayerControl(View):
 
 
 class Music(Cog):
-    """Play music using lavalink server"""
+    """Play music using lava link server"""
 
     def __init__(self, bot):
         """@param bot:"""
@@ -205,7 +207,7 @@ class Music(Cog):
         return "SEARCH"
 
     @command(
-        "play", help="Send YT URL or Spotify URL or Track Name Followed By Command."
+        "play", help="Send Song Name or YT/Spotify URL"
     )
     async def play(self, ctx: Context, *args: str):
         """
@@ -223,11 +225,12 @@ class Music(Cog):
         track_name_url = " ".join(args)
 
         if not track_name_url:
-            return await edit_message(message, "Track Name Or URL Is Required....!")
+            return await edit_message(message, "Song Name Or URL Is Required!")
         if not ctx.author.voice:
             return await edit_message(
                 message,
-                "You are not in a voice channel. Please join one to use this command.",
+                "You are not in a voice channel. \
+                                Please join one to use this command.",
             )
 
         search_track = self.check_url_service(track_name_url)
@@ -263,8 +266,8 @@ class Music(Cog):
         for track in tracks:
             await music_player.voice_client.queue.put_wait(track)
             if (
-                not music_player.voice_client.playing
-                and not music_player.voice_client.paused
+                    not music_player.voice_client.playing
+                    and not music_player.voice_client.paused
             ):
                 await music_player.voice_client.play(track, add_history=True)
 

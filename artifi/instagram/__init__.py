@@ -25,10 +25,12 @@ class Instagram(Instaloader):
 
     def __init__(self, context, ig_username, ig_password):
         """
-        Logging in on instagram using instaloader will cause temporary ban if your using on cloud server of another ip.
-        So It's recommended to first logging the instagram on the firefox. Currently, this script will access the
+        Logging in on instagram using instaloader will cause temporary ban if your
+        using on cloud server of another ip.So It's recommended to first logging the
+        instagram on the firefox. Currently, this script will access the
         firefox and fetch the instagram cookie from there.
-        @note If something not working then login again on firefox and run this script again.
+        @note If something not working then login again on firefox and run this script
+              again.
         @param context: Pass :class Artifi
         @param ig_username: Instagram username
         @param ig_password: Instagram password
@@ -53,12 +55,13 @@ class Instagram(Instaloader):
         Fetch the instagram cookies path from firefox
         @return:  cookie path
         """
-        default_cookie_path = {
+        browser_cookie_path = {
             "Windows": "~/AppData/Roaming/Mozilla/Firefox/Profiles/*/cookies.sqlite",
-            "Darwin": "~/Library/Application Support/Firefox/Profiles/*/cookies.sqlite",
+            "Darwin": "~/Library/Application Support/Firefox/Profiles/\
+                                                            */cookies.sqlite",
         }.get(system(), "~/.mozilla/firefox/*/cookies.sqlite")
 
-        cookie_paths = glob(os.path.expanduser(default_cookie_path))
+        cookie_paths = glob(os.path.expanduser(browser_cookie_path))
         return cookie_paths[0] if cookie_paths else None
 
     def _fetch_and_save_cookies(self) -> str:
@@ -70,15 +73,16 @@ class Instagram(Instaloader):
 
         if cookie_path:
             conn = connect(f"file:{cookie_path}?immutable=1", uri=True)
-
             try:
                 cursor = conn.execute(
-                    "SELECT name, value FROM moz_cookies WHERE baseDomain='instagram.com'"
+                    "SELECT name, value FROM moz_cookies WHERE\
+                                    baseDomain='instagram.com'"
                 )
                 cookie_data = cursor.fetchall()
             except OperationalError:
                 cursor = conn.execute(
-                    "SELECT name, value FROM moz_cookies WHERE host LIKE '%instagram.com'"
+                    "SELECT name, value FROM moz_cookies WHERE\
+                                    host LIKE '%instagram.com'"
                 )
                 cookie_data = cursor.fetchall()
 
@@ -144,7 +148,8 @@ class Instagram(Instaloader):
         @param user_name: Instagram username
         """
         profile: Profile = Profile.from_username(self.context, user_name.strip())
-        post_path = os.path.join(self.acontext.directory, str(profile.userid), "Posts")
+        post_path = os.path.join(self.acontext.directory, str(profile.userid),
+                                 "Posts")
         os.makedirs(post_path, exist_ok=True)
         user_posts = profile.get_posts()
         for post in user_posts:
@@ -175,4 +180,4 @@ class Instagram(Instaloader):
                 time.sleep(2)
                 self.download_storyitem(highlights, target=Path(album_path))
             self.acontext.logger.info(f"{album_name} Was Downloaded...!")
-        self.acontext.logger.info(f"{profile.full_name} Highlights Was Downloaded...!")
+        self.acontext.logger.info(f"{profile.full_name} Highlights Was Downloaded!")

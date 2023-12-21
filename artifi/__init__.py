@@ -15,7 +15,6 @@ from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session, declarative_base, sessionmaker
 
 from artifi.config.ext.logger import LogConfig
-
 from .config import BaseConfig
 
 
@@ -64,7 +63,8 @@ class Artifi(BaseConfig):
     def _create_directory(self):
         """
 
-        @return create and return the default directory for the file and other junks required for artifi:
+        @return create and return the default directory for the file and other junks
+                required for artifi:
         """
         working_directory = os.path.join(self.cwd, "Downloads")
         os.makedirs(working_directory, exist_ok=True)
@@ -85,27 +85,29 @@ class Artifi(BaseConfig):
         return session_maker()
 
     def add_scheduler(
-        self,
-        function: func,
-        start_time: Optional[str] = None,
-        end_time: Optional[str] = None,
-        interval: Optional[int] = None,
-        start_date: Optional[str] = None,
-        end_date: Optional[str] = None,
-        allow_duplicate: bool = True,
+            self,
+            function: func,
+            start_time: Optional[str] = None,
+            end_time: Optional[str] = None,
+            interval: Optional[int] = None,
+            start_date: Optional[str] = None,
+            end_date: Optional[str] = None,
+            allow_duplicate: bool = True,
     ):
         """
         @param function: A Callable function
-        @param start_time: Determine when to start the schedular
-        @param end_time: Determine when to stop the schedular
+        @param start_time: Determine when to start the scheduler
+        @param end_time: Determine when to stop the scheduler
         @param interval: Time delay between execution
-        @param start_date: Starting date of the schedular execution
-        @param end_date: Starting date of the schedular execution
-        @param allow_duplicate: 'True' to replace the existing schedular with same job_id.'False' to add same schedular
-                                with same job_id
-        example_usage: self.add_scheduler(function,'HH:MM','HH:MM','YYYY-MM-DD','YYYY-MM-DD',60)
-        Note: If the start_time or end_time is not given it will take 00:00 and 23:59, and if start_date or end_date is
-                not given it will run every day, and the default interval will be 24hrs
+        @param start_date: Starting date of the scheduler execution
+        @param end_date: Starting date of the scheduler execution
+        @param allow_duplicate: 'True' to replace the existing scheduler with same
+                                job_id.'False' to add same scheduler with same job_id.
+        example_usage: self.add_scheduler(function,'HH:MM','HH:MM','YYYY-MM-DD',
+                       'YYYY-MM-DD',60)
+        Note: If the start_time or end_time is not given it will take 00:00 and 23:59,
+              and if start_date or end_date is not given it will run every day, and
+              the default interval will be 24hrs
         """
         defaults = {
             "start_date": datetime.now().strftime("%Y-%m-%d"),
@@ -116,16 +118,18 @@ class Artifi(BaseConfig):
         }
         start_date, end_date, start_time, end_time, interval = (
             value if value is not None else defaults[key]
-            for key, value in zip(
-                defaults.keys(), (start_date, end_date, start_time, end_time, interval)
-            )
+            for key, value in zip(defaults.keys(),
+                                  (start_date, end_date, start_time, end_time,
+                                   interval))
         )
         tz = pytz.timezone("asia/kolkata")
         start_datetime = tz.localize(
-            datetime.strptime(f"{start_date} {start_time}", "%Y-%m-%d %H:%M")
+            datetime.strptime(f"{start_date} {start_time}",
+                              "%Y-%m-%d %H:%M")
         )
         end_datetime = tz.localize(
-            datetime.strptime(f"{end_date} {end_time}", "%Y-%m-%d %H:%M")
+            datetime.strptime(f"{end_date} {end_time}",
+                              "%Y-%m-%d %H:%M")
         )
         job_id = f"{function.__name__}_job"
         self._scheduler.add_job(
@@ -139,13 +143,15 @@ class Artifi(BaseConfig):
             jobstore=self.__class__.__name__,
         )
         self.logger.debug(
-            f"Function {function.__name__} was added to Scheduler with job ID: {job_id} ...!"
+            f"Function {function.__name__} was added to Scheduler \
+                                        with job ID: {job_id} ...!"
         )
 
-    def start_schedular(self):
+    def start_scheduler(self):
         """
 
-        @return: It will start all the schedular job in the self.__scheduler and return the status
+        @return: It will start all the scheduler job in then self.__scheduler and
+                 return the status
         """
         return self._scheduler.start()
 

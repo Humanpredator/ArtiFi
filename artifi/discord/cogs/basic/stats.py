@@ -21,7 +21,7 @@ class Stats(Cog):
         """@param bot:"""
         self._bot: Discord = bot
 
-    @command("stats", help="Fetch All Possible Detail About The Hosted Server.")
+    @command("stats", help="Show Details Of Hosted machine")
     async def server_status(self, ctx):
         """
 
