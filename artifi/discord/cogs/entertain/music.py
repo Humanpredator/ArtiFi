@@ -11,8 +11,7 @@ from discord.ui import View, button
 from wavelink import AutoPlayMode, player
 
 from artifi.discord import Discord
-from artifi.discord.misc.discord_func import (delete_message, edit_message,
-                                              send_message)
+from artifi.discord.misc.discord_func import delete_message, edit_message, send_message
 
 
 class PlayerControl(View):
@@ -61,8 +60,8 @@ class PlayerControl(View):
         @return:
         """
         if (
-                not (message := await self.verify_message())
-                or not self.voice_client.connected
+            not (message := await self.verify_message())
+            or not self.voice_client.connected
         ):
             self._bot.context.logger.info(
                 f"{self._control_id}: Music player Status Updating Task Disposed...!"
@@ -86,8 +85,7 @@ class PlayerControl(View):
             embed.add_field(
                 name="Volume", value=f"{self.voice_client.volume}%", inline=True
             )
-            return await edit_message(message, embed=embed, markup=self,
-                                      delete=_delete)
+            return await edit_message(message, embed=embed, markup=self, delete=_delete)
 
     @button(label="Play/Pause", style=ButtonStyle.green)
     async def play_button(self, *args):
@@ -206,9 +204,7 @@ class Music(Cog):
             return "OTHERURL"
         return "SEARCH"
 
-    @command(
-        "play", help="Send Song Name or YT/Spotify URL"
-    )
+    @command("play", help="Send Song Name or YT/Spotify URL")
     async def play(self, ctx: Context, *args: str):
         """
 
@@ -266,8 +262,8 @@ class Music(Cog):
         for track in tracks:
             await music_player.voice_client.queue.put_wait(track)
             if (
-                    not music_player.voice_client.playing
-                    and not music_player.voice_client.paused
+                not music_player.voice_client.playing
+                and not music_player.voice_client.paused
             ):
                 await music_player.voice_client.play(track, add_history=True)
 

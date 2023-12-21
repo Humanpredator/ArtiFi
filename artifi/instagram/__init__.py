@@ -148,8 +148,7 @@ class Instagram(Instaloader):
         @param user_name: Instagram username
         """
         profile: Profile = Profile.from_username(self.context, user_name.strip())
-        post_path = os.path.join(self.acontext.directory, str(profile.userid),
-                                 "Posts")
+        post_path = os.path.join(self.acontext.directory, str(profile.userid), "Posts")
         os.makedirs(post_path, exist_ok=True)
         user_posts = profile.get_posts()
         for post in user_posts:

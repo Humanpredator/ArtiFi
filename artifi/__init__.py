@@ -15,6 +15,7 @@ from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session, declarative_base, sessionmaker
 
 from artifi.config.ext.logger import LogConfig
+
 from .config import BaseConfig
 
 
@@ -85,14 +86,14 @@ class Artifi(BaseConfig):
         return session_maker()
 
     def add_scheduler(
-            self,
-            function: func,
-            start_time: Optional[str] = None,
-            end_time: Optional[str] = None,
-            interval: Optional[int] = None,
-            start_date: Optional[str] = None,
-            end_date: Optional[str] = None,
-            allow_duplicate: bool = True,
+        self,
+        function: func,
+        start_time: Optional[str] = None,
+        end_time: Optional[str] = None,
+        interval: Optional[int] = None,
+        start_date: Optional[str] = None,
+        end_date: Optional[str] = None,
+        allow_duplicate: bool = True,
     ):
         """
         @param function: A Callable function
@@ -118,18 +119,16 @@ class Artifi(BaseConfig):
         }
         start_date, end_date, start_time, end_time, interval = (
             value if value is not None else defaults[key]
-            for key, value in zip(defaults.keys(),
-                                  (start_date, end_date, start_time, end_time,
-                                   interval))
+            for key, value in zip(
+                defaults.keys(), (start_date, end_date, start_time, end_time, interval)
+            )
         )
         tz = pytz.timezone("asia/kolkata")
         start_datetime = tz.localize(
-            datetime.strptime(f"{start_date} {start_time}",
-                              "%Y-%m-%d %H:%M")
+            datetime.strptime(f"{start_date} {start_time}", "%Y-%m-%d %H:%M")
         )
         end_datetime = tz.localize(
-            datetime.strptime(f"{end_date} {end_time}",
-                              "%Y-%m-%d %H:%M")
+            datetime.strptime(f"{end_date} {end_time}", "%Y-%m-%d %H:%M")
         )
         job_id = f"{function.__name__}_job"
         self._scheduler.add_job(
