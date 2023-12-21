@@ -30,7 +30,8 @@ class WhatsApp:
         @param message: string content to be sent to :wa_id
         @return: msg_id
         """
-        url = f"{self.base_url}/{self.version}/{self.wa_number_id}/messages"
+        url = (f"{self.base_url}/{self.version}/{self.wa_number_id}"
+               "/messages")
         payload = {
             "messaging_product": "whatsapp",
             "recipient_type": "individual",

@@ -28,8 +28,8 @@ class CloudFlareAi(CloudFlare):
             self._chat_data[chat_uid]["messages"].append(
                 {"role": "user", "content": msg.strip()}
             )
-        url = f"{self._base_url}/{self.service}/{self.version}/accounts/\
-                                {self.account_id}/ai/run/{self._textmodels(model)}"
+        url = (f"{self._base_url}/{self.service}/{self.version}/accounts/"
+               f"{self.account_id}/ai/run/{self._textmodels(model)}")
 
         response = self._cfrequest.post(url, json=self._chat_data[chat_uid],
                                         timeout=30)
@@ -48,8 +48,8 @@ class CloudFlareAi(CloudFlare):
         if not path:
             path = self.context.directory
         payload = {"prompt": prompt.strip()}
-        url = f"{self._base_url}/{self.service}/{self.version}/accounts/\
-                                    {self.account_id}/ai/run/{self._t2imodels(model)}"
+        url = (f"{self._base_url}/{self.service}/{self.version}/accounts/"
+               f"{self.account_id}/ai/run/{self._t2imodels(model)}")
         self.context.logger.info("Image Generation Is In Progress...")
         response = self._cfrequest.post(url, json=payload, timeout=30)
         response.raise_for_status()

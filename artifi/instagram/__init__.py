@@ -55,10 +55,11 @@ class Instagram(Instaloader):
         Fetch the instagram cookies path from firefox
         @return:  cookie path
         """
+        winp = "~/AppData/Roaming/Mozilla/Firefox/Profiles/*/cookies.sqlite"
+        linp = "~/Library/Application Support/Firefox/Profiles/*/cookies.sqlite"
         browser_cookie_path = {
-            "Windows": "~/AppData/Roaming/Mozilla/Firefox/Profiles/*/cookies.sqlite",
-            "Darwin": "~/Library/Application Support/Firefox/Profiles/\
-                                                            */cookies.sqlite",
+            "Windows": winp,
+            "Darwin": linp,
         }.get(system(), "~/.mozilla/firefox/*/cookies.sqlite")
 
         cookie_paths = glob(os.path.expanduser(browser_cookie_path))
@@ -70,20 +71,15 @@ class Instagram(Instaloader):
         @return: saved cookie path
         """
         cookie_path = self._get_cookie_path()
-
+        qry1 = "SELECT name, value FROM moz_cookies WHERE baseDomain='instagram.com'"
+        qry2 = "SELECT name, value FROM moz_cookies WHERE host LIKE '%instagram.com'"
         if cookie_path:
             conn = connect(f"file:{cookie_path}?immutable=1", uri=True)
             try:
-                cursor = conn.execute(
-                    "SELECT name, value FROM moz_cookies WHERE\
-                                    baseDomain='instagram.com'"
-                )
+                cursor = conn.execute(qry1)
                 cookie_data = cursor.fetchall()
             except OperationalError:
-                cursor = conn.execute(
-                    "SELECT name, value FROM moz_cookies WHERE\
-                                    host LIKE '%instagram.com'"
-                )
+                cursor = conn.execute(qry2)
                 cookie_data = cursor.fetchall()
 
             with open(self._session_file, "wb") as file:
@@ -156,7 +152,7 @@ class Instagram(Instaloader):
             self.filename_pattern = self.file_name(profile.full_name, post)
             time.sleep(2)
             self.download_post(post, target=Path(post_path))
-        self.acontext.logger.info(f"{profile.username} Post Was Downloaded...!")
+        self.acontext.logger.info(f"{profile.username} Post Was Downloaded!")
 
     def download_album(self, user_name) -> None:
         """

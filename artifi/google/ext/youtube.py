@@ -350,9 +350,9 @@ class GoogleYouTubeStudio(GoogleWebSession):
             password: str,
             headless: bool = True,
             param_key: str = "AIzaSyBUPetSUmoZL-OhlxA7wSac5XinrygCqMo",
-            user_agent: str = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) \
-                                AppleWebKit/537.36 (KHTML, like Gecko) \
-                                Chrome/119.0.0.0 Safari/537.36",
+            user_agent: str = ("Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+                               "AppleWebKit/537.36 (KHTML, like Gecko) "
+                               "Chrome/119.0.0.0 Safari/537.36")
     ):
         """
 
@@ -364,14 +364,13 @@ class GoogleYouTubeStudio(GoogleWebSession):
         @param param_key: YouTube default param key
         """
         super().__init__(context, email, password, headless, user_agent)
-        self._session = self._web_request()
         self._base_url = "https://studio.youtube.com"
         self._version = "v1"
         self._service = "youtubei"
         self.auth_key: str = param_key
         self._session_token: str = Optional[str]
         self._channel_id: str = Optional[str]
-        self._gauth_id = "0"
+        self._session = self._web_request()
 
     async def _sapisid_hash(self, sapisid):
         """
@@ -387,18 +386,21 @@ class GoogleYouTubeStudio(GoogleWebSession):
 
     def _intercept_response(self, response):
         """
-
+        To Get Session-ID
         @param response:
         @return:
         """
-        session_token_url = f"https://studio.youtube.com/\
-                                    youtubei/v1/ars/grst?alt=json&key={self.auth_key}"
+        session_token_url = (f"{self._base_url}/{self._service}/{self._version}"
+                             f"/ars/grst?alt=json&key={self.auth_key}")
         if session_token_url in response.url:
             data = response.json()
             self._session_token = data.get("sessionToken")
 
-    def _default_header(self):
-        """@return:"""
+    def _cookie_field(self):
+        """
+        Fetch required cookie from session.json file
+        @return: header cookies and sapidid
+        """
         required_cookie_field = [
             "__Secure-3PAPISID",
             "__Secure-3PSIDTS",
@@ -415,24 +417,27 @@ class GoogleYouTubeStudio(GoogleWebSession):
         return "; ".join(set(cookie_field)), sapid_value
 
     def _web_request(self) -> Session:
-        """@return:"""
+        """
+        Make requests session and set default cookie to make web api request
+        @return:
+        """
         cp_url = self.fetch_save_gsession(
-            "https://studio.youtube.com/", self._intercept_response
+            self._base_url, self._intercept_response
         )
         self._channel_id = cp_url.split("/")[-1]
         default_session = Session()
-        header_cookie, sapid_value = self._default_header()
+        header_cookie, sapid_value = self._cookie_field()
         if not isinstance(header_cookie or sapid_value, str):
             raise ValueError("Failed To Get Valid Cookies")
         default_session.headers = {
             "authority": "api.youtube.com",
-            "authorization": f"SAPISIDHASH \
-                                    {asyncio.run(self._sapisid_hash(sapid_value))}",
+            "authorization": ("SAPISIDHASH "
+                              f"{asyncio.run(self._sapisid_hash(sapid_value))}"),
             "studio-type": "application/json",
             "cookie": header_cookie.strip(),
             "user-agent": self._user_agent,
-            "x-goog-authuser": self._gauth_id,
-            "x-origin": "https://studio.youtube.com",
+            "x-goog-authuser": "0",
+            "x-origin": self._base_url,
         }
         default_session.params = {"alt": "json", "key": self.auth_key}
         return default_session
@@ -446,47 +451,7 @@ class GoogleYouTubeStudio(GoogleWebSession):
             "filter": {
                 "and": {
                     "operands": [
-                        {"channelIdIs": {"value": self._channel_id}},
-                        {
-                            "and": {
-                                "operands": [
-                                    {"videoOriginIs": {"value": "VIDEO_ORIGIN_UPLOAD"}},
-                                    {
-                                        "not": {
-                                            "operand": {
-                                                "or": {
-                                                    "operands": [
-                                                        {
-                                                            "contentTypeIs": {
-                                                                "value": "CREATOR_CONTENT_TYPE_SHORTS"
-                                                            }
-                                                        },
-                                                        {
-                                                            "and": {
-                                                                "operands": [
-                                                                    {
-                                                                        "not": {
-                                                                            "operand": {
-                                                                                "statusIs": {
-                                                                                    "value": "VIDEO_STATUS_PROCESSED"
-                                                                                }
-                                                                            }
-                                                                        }
-                                                                    },
-                                                                    {
-                                                                        "isShortsEligible": {}
-                                                                    },
-                                                                ]
-                                                            }
-                                                        },
-                                                    ]
-                                                }
-                                            }
-                                        }
-                                    },
-                                ]
-                            }
-                        },
+                        {"channelIdIs": {"value": self._channel_id}}
                     ]
                 }
             },
@@ -565,8 +530,8 @@ class GoogleYouTubeStudio(GoogleWebSession):
                 },
             },
         }
-        _url = f"{self._base_url}/{self._service}/{self._version}\
-                                        /creator/list_creator_videos"
+        _url = (f"{self._base_url}/{self._service}/{self._version}"
+                f"/creator/list_creator_videos")
         all_set = True
         while all_set:
             response = self._session.post(_url, json=payload)
@@ -627,8 +592,8 @@ class GoogleYouTubeStudio(GoogleWebSession):
             "criticalRead": False,
             "includeLicensingOptions": False,
         }
-        _url = f"{self._base_url}/{self._service}/{self._version}/creator\
-                        /list_creator_received_claims?alt=json&key={self.auth_key}"
+        _url = (f"{self._base_url}/{self._service}/{self._version}"
+                f"/creator/list_creator_received_claims?alt=json&key={self.auth_key}")
 
         response = self._session.post(_url, json=payload)
         response.raise_for_status()
@@ -639,10 +604,8 @@ class GoogleYouTubeStudio(GoogleWebSession):
             self._session = self._web_request()
             return self.list_video_claims(video)
         data = response.json().get("receivedClaims", [])
-
         for claim in data:
             yield StudioVideoClaimsObj(claim)
-        return None
 
     def _get_claimed_duration(self, claim: StudioVideoClaimsObj):
         """
@@ -650,8 +613,8 @@ class GoogleYouTubeStudio(GoogleWebSession):
         @param claim:
         @return:
         """
-        _url = f"{self._base_url}/{self._service}/{self._version}/copyright\
-                                                /get_creator_received_claim_matches"
+        _url = (f"{self._base_url}/{self._service}/{self._version}"
+                f"/copyright/get_creator_received_claim_matches")
         payload = {
             "videoId": claim.video_id,
             "claimId": claim.claim_id,
@@ -703,10 +666,11 @@ class GoogleYouTubeStudio(GoogleWebSession):
         @param claim: Pass :class StudioVideoClaimsObj
         @return:
         """
-        _url = (
-            f"{self._base_url}/{self._service}/{self._version}\
-                                    /video_editor/edit_video"
-        )
+        if "TRIM_SEGMENT" not in claim.resolve_option:
+            return {"status": "Trim Segment option is unavailable for this claims",
+                    "code": "INELIGIBLE_FOR_TRIM_OUT"}
+        _url = (f"{self._base_url}/{self._service}/{self._version}"
+                "/video_editor/edit_video")
 
         payload = {
             "externalVideoId": claim.video_id,
@@ -768,15 +732,17 @@ class GoogleYouTubeStudio(GoogleWebSession):
 
     def mute_segment_songs(self, claim: StudioVideoClaimsObj, song_only=True):
         """
-        To mute the songs of the segment
+        To mute the songs of the segment or mute entire segment sound
         @param claim: Pass :class StudioVideoClaimsObj
-        @param song_only:
+        @param song_only: "True" to mute cpr song only, "False" to mute entire sound
         @return:
         """
-        _url = (
-            f"{self._base_url}/{self._service}/{self._version}\
-                                    /video_editor/edit_video"
-        )
+        if "MUTE_SONG" not in claim.resolve_option:
+            return {"status": "Mute song is unavailable for this claim",
+                    "code": "INELIGIBLE_TO_MUTE"}
+
+        _url = (f"{self._base_url}/{self._service}/{self._version}"
+                "/video_editor/edit_video")
 
         payload = {
             "externalVideoId": claim.video_id,
