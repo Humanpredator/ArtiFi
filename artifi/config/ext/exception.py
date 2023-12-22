@@ -1,6 +1,3 @@
-"""Artifi Exception"""
-
-
 class ArtifiException(Exception):
     """Artifi Base Exception"""
 

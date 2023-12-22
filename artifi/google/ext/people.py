@@ -7,72 +7,6 @@ from artifi import Artifi
 from artifi.google import Google
 
 
-class GooglePeople(Google):
-    """
-    To get google contacts
-    uses Oauth
-    """
-
-    def __init__(self, context, scope):
-        """
-
-        @param context:
-        @param scope:
-        """
-        super().__init__(context)
-        self.context: Artifi = context
-        self._creds = self.oauth_creds(scope)
-        self._service = build("people", "v1",
-                              credentials=self._creds)
-
-    def get_contacts(self) -> Generator:
-        """fetch all available contacts"""
-        fields = [
-            "addresses",
-            "ageRanges",
-            "biographies",
-            "birthdays",
-            "calendarUrls",
-            "clientData",
-            "coverPhotos",
-            "emailAddresses",
-            "events",
-            "externalIds",
-            "genders",
-            "imClients",
-            "interests",
-            "locales",
-            "locations",
-            "memberships",
-            "metadata",
-            "miscKeywords",
-            "names",
-            "nicknames",
-            "occupations",
-            "organizations",
-            "phoneNumbers",
-            "photos",
-            "relations",
-            "sipAddresses",
-            "skills",
-            "urls",
-            "userDefined"
-        ]
-        results = (
-            self._service.people()
-            .connections()
-            .list(
-                resourceName="people/me",
-                pageSize=1000,
-                personFields=','.join(fields)
-            )
-            .execute()
-        )
-        connections = results.get("connections", [])
-        for people in connections:
-            yield GoogleContactObj(people)
-
-
 class GoogleContactObj:
     """Contacts Details"""
 
@@ -135,3 +69,69 @@ class GoogleContactObj:
         @return:
         """
         return self._profile_url
+
+
+class GooglePeople(Google):
+    """
+    To get google contacts
+    uses Oauth
+    """
+
+    def __init__(self, context, scope):
+        """
+
+        @param context:
+        @param scope:
+        """
+        super().__init__(context)
+        self.context: Artifi = context
+        self._creds = self.oauth_creds(scope, 'people')
+        self._service = build("people", "v1",
+                              credentials=self._creds)
+
+    def get_contacts(self) -> Generator[GoogleContactObj, None, None]:
+        """fetch all available contacts"""
+        fields = [
+            "addresses",
+            "ageRanges",
+            "biographies",
+            "birthdays",
+            "calendarUrls",
+            "clientData",
+            "coverPhotos",
+            "emailAddresses",
+            "events",
+            "externalIds",
+            "genders",
+            "imClients",
+            "interests",
+            "locales",
+            "locations",
+            "memberships",
+            "metadata",
+            "miscKeywords",
+            "names",
+            "nicknames",
+            "occupations",
+            "organizations",
+            "phoneNumbers",
+            "photos",
+            "relations",
+            "sipAddresses",
+            "skills",
+            "urls",
+            "userDefined"
+        ]
+        results = (
+            self._service.people()
+            .connections()
+            .list(
+                resourceName="people/me",
+                pageSize=1000,
+                personFields=','.join(fields)
+            )
+            .execute()
+        )
+        connections = results.get("connections", [])
+        for people in connections:
+            yield GoogleContactObj(people)

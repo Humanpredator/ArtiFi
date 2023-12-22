@@ -2,8 +2,9 @@
 import logging
 import os
 import sys
+import traceback
 from datetime import datetime, timedelta
-from typing import List, Optional
+from typing import List, Optional, Any
 
 import pytz
 from apscheduler.jobstores.memory import MemoryJobStore
@@ -43,9 +44,9 @@ class Artifi(BaseConfig):
         self.logger: logging.Logger = LogConfig(self).logger
         self.db_engine: Engine = self._db_engine()
         self.fsapi: Flask = Flask(import_name)
-
-        sys.excepthook = lambda exctype, value, traceback: self.logger.critical(
-            f"{traceback} || {exctype.__name__} || {value}"
+        self.tz: datetime.tzinfo = pytz.timezone('Asia/Kolkata')
+        sys.excepthook = lambda exctype, value, tb: self.logger.critical(
+            "".join(traceback.format_exception(exctype, value, tb))
         )
 
     def create_db_table(self, tables: List[dbmodel]):
@@ -87,21 +88,25 @@ class Artifi(BaseConfig):
     def add_scheduler(
             self,
             function: func,
+            args: Optional[Any] = None,
+            job_id: Optional[str] = None,
+            start_date: Optional[str] = None,
             start_time: Optional[str] = None,
+            end_date: Optional[str] = None,
             end_time: Optional[str] = None,
             interval: Optional[int] = None,
-            start_date: Optional[str] = None,
-            end_date: Optional[str] = None,
-            allow_duplicate: bool = True,
+            no_duplicate: bool = True,
     ):
         """
+        @param job_id:
+        @param args:
         @param function: A Callable function
         @param start_time: Determine when to start the scheduler
         @param end_time: Determine when to stop the scheduler
         @param interval: Time delay between execution
         @param start_date: Starting date of the scheduler execution
         @param end_date: Starting date of the scheduler execution
-        @param allow_duplicate: 'True' to replace the existing scheduler with same
+        @param no_duplicate: 'True' to replace the existing scheduler with same
                                 job_id.'False' to add same scheduler with same job_id.
         example_usage: self.add_scheduler(function,'HH:MM','HH:MM','YYYY-MM-DD',
                        'YYYY-MM-DD',60)
@@ -114,7 +119,7 @@ class Artifi(BaseConfig):
             "end_date": (datetime.now() + timedelta(days=1)).strftime("%Y-%m-%d"),
             "start_time": "00:00",
             "end_time": "23:59",
-            "interval": 60 * 24 if end_date is None else None,
+            "interval": 60 * 24,
         }
         start_date, end_date, start_time, end_time, interval = (
             value if value is not None else defaults[key]
@@ -122,29 +127,30 @@ class Artifi(BaseConfig):
                                   (start_date, end_date, start_time, end_time,
                                    interval))
         )
-        tz = pytz.timezone("asia/kolkata")
-        start_datetime = tz.localize(
+
+        start_datetime = self.tz.localize(
             datetime.strptime(f"{start_date} {start_time}",
                               "%Y-%m-%d %H:%M")
         )
-        end_datetime = tz.localize(
+        end_datetime = self.tz.localize(
             datetime.strptime(f"{end_date} {end_time}",
                               "%Y-%m-%d %H:%M")
         )
-        job_id = f"{function.__name__}_job"
+        job_func_id = job_id if job_id else f"{function.__name__}_job"
         self._scheduler.add_job(
             function,
-            "interval",
+            args=args,
+            trigger="interval",
             minutes=interval,
             start_date=start_datetime,
             end_date=end_datetime,
-            id=job_id,
-            replace_existing=allow_duplicate,
+            id=job_func_id,
+            replace_existing=no_duplicate,
             jobstore=self.__class__.__name__,
         )
-        self.logger.debug(
-            f"Function {function.__name__} was added to Scheduler \
-                                        with job ID: {job_id} ...!"
+        self.logger.info(
+            (f"Function {function.__name__} was added to Scheduler "
+             f"with job ID: {job_func_id} ...!")
         )
 
     def start_scheduler(self):
