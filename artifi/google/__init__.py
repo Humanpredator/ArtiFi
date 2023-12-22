@@ -15,7 +15,7 @@ class Google:
         """@param context: pass :class Artifi"""
         self.context: Artifi = context
 
-    def oauth_creds(self, scope, cname='token'):
+    def oauth_creds(self, scope, cname="token"):
         """
         This method used to gain access via Oauth-client
         @param cname:
@@ -25,7 +25,7 @@ class Google:
         if not scope:
             raise ValueError("Scope Required...!")
         credential_path = os.path.join(self.context.cwd, "credentials.json")
-        token_dir = os.path.join(self.context.directory, '.gtoken')
+        token_dir = os.path.join(self.context.directory, ".gtoken")
         os.makedirs(token_dir, exist_ok=True)
         token_path = os.path.join(token_dir, f"{cname}.json")
         creds = None
@@ -39,9 +39,7 @@ class Google:
             else:
                 if not os.path.exists(credential_path):
                     raise FileNotFoundError("Opps!, credentials.json Not Found...!")
-                flow = InstalledAppFlow.from_client_secrets_file(
-                    credential_path, scope
-                )
+                flow = InstalledAppFlow.from_client_secrets_file(credential_path, scope)
                 creds = flow.run_local_server(port=0)
             # Save the credentials for the next run
             with open(token_path, "w") as token:
