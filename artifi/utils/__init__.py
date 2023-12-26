@@ -1,10 +1,38 @@
 """Common function used throughout the package"""
-
+import mimetypes
+import os
+import threading
+import time
 from typing import List, Union
 
 
+class DriveSetInterval:
+    """
+
+    """
+
+    def __init__(self, interval, action):
+        self.interval = interval
+        self.action = action
+        self.stopEvent = threading.Event()
+        thread = threading.Thread(target=self.__setInterval)
+        thread.start()
+
+    def __setInterval(self):
+        nextTime = time.time() + self.interval
+        while not self.stopEvent.wait(nextTime - time.time()):
+            nextTime += self.interval
+            self.action()
+
+    def cancel(self):
+        """
+
+        """
+        self.stopEvent.set()
+
+
 def get_nested_key(
-    d: Union[dict, List[dict]], key: str, default="UNKNOWN"
+        d: Union[dict, List[dict]], key: str, default="UNKNOWN"
 ) -> Union[str, dict, List[str]]:
     """
     Used to Get the specific key value from dict junk
@@ -73,12 +101,38 @@ def readable_size(size_in_bytes) -> str:
         return "File too large"
 
 
+def path_size(path):
+    """
+
+    @param path:
+    @return:
+    """
+    if os.path.isfile(path):
+        return os.path.getsize(path)
+    total_size = 0
+    for root, dirs, files in os.walk(path):
+        for f in files:
+            abs_path = os.path.join(root, f)
+            total_size += os.path.getsize(abs_path)
+    return total_size
+
+
 def speed_convert(size):
     """Hi human, you can't read bytes?"""
-    power = 2**10
+    power = 2 ** 10
     zero = 0
     units = {0: "", 1: "Kb/s", 2: "MB/s", 3: "Gb/s", 4: "Tb/s"}
     while size > power:
         size /= power
         zero += 1
     return f"{round(size, 2)} {units[zero]}"
+
+
+def fetch_mime_type(file_path):
+    """
+
+    @param file_path:
+    @return:
+    """
+    mime_type, encoding = mimetypes.guess_type(file_path)
+    return mime_type or "text/plain"

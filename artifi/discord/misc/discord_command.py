@@ -23,7 +23,7 @@ class MyHelpCommand(HelpCommand):
         )
 
         for cog, commands in mapping.items():
-            if not cog:
+            if cog:
                 command_signatures = [
                     f"**``{prefix}{command.name}``**: {command.short_doc}"
                     for command in commands

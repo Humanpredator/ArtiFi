@@ -29,6 +29,7 @@ class Shell(Cog):
             return await send_message(ctx, "Access Denied...!")
         if not args:
             return await send_message(ctx, "Usage: !shell <command>")
+
         cmd = " ".join(args)
         msg = await send_message(ctx, "Running the command...")
         content = "**Shell Out**\n"
@@ -43,7 +44,6 @@ class Shell(Cog):
                 errors="ignore",
             )
             stdout, stderr = process.communicate()
-
             if stdout or stderr:
                 if len(stdout) + len(stderr) > 2000:
                     # Output is too long, save it to a file

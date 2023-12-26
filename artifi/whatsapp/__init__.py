@@ -62,7 +62,6 @@ class WhatsApp:
             data: WaPhraseMessage = WaPhraseMessage(request.json)
             if data.ibm_type == "MSG":
                 msg_id, res_msg = self.res_func(data)
-                print(msg_id, res_msg)
                 with self.context.db_session() as session:
                     profile = (
                         session.query(WaProfileModel)

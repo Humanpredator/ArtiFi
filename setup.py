@@ -74,6 +74,8 @@ setup(
                       'urllib3==2.1.0',
                       'wavelink==3.1.0',
                       'Werkzeug==3.0.1',
-                      'yarl==1.9.2']
+                      'yarl==1.9.2',
+                      'tenacity~=8.2.3'
+                      ]
 
 )
