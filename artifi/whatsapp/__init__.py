@@ -22,7 +22,8 @@ class WhatsApp:
         self.wa_number_id = self.context.WHATSAPP_NUMBER_ID
 
         self.res_func: Callable = lambda data: (
-            self.send_text_message(data.wa_id, 'Default Message'))
+            self.send_text_message(data.wa_id, "Default Message")
+        )
 
         self.context.create_db_table([WaProfileModel, WaMessageModel])
         self.context.fsapi.add_url_rule(
@@ -39,8 +40,7 @@ class WhatsApp:
         @param message: string content to be sent to :wa_id
         @return: msg_id
         """
-        url = (f"{self._base_url}/{self._version}/{self.wa_number_id}"
-               "/messages")
+        url = f"{self._base_url}/{self._version}/{self.wa_number_id}" "/messages"
         payload = {
             "messaging_product": "whatsapp",
             "recipient_type": "individual",
@@ -105,9 +105,7 @@ class WhatsApp:
                             .first()
                         )
                         if not wam:
-                            self.context.logger.info(
-                                "No Message Found, Skipping...!"
-                            )
+                            self.context.logger.info("No Message Found, Skipping...!")
                         else:
                             wam.wa_profile_pid = profile.wa_profile_pid
                             wam.wa_msg_id = data.msg_id
@@ -126,8 +124,8 @@ class WhatsApp:
             challenge = request.args.get("hub.challenge")
             if mode and token:
                 if (
-                        mode == "subscribe"
-                        and token == self.context.WHATSAPP_WEBHOOK_SECRET
+                    mode == "subscribe"
+                    and token == self.context.WHATSAPP_WEBHOOK_SECRET
                 ):
                     return challenge, 200
                 return jsonify("Unauthorized"), 403
@@ -194,13 +192,13 @@ class WaPhraseMessage:
             if (changes := entry[0].get("changes", [])) and isinstance(changes, list):
                 if (value := changes[0].get("value", {})) and isinstance(value, dict):
                     if (contacts := value.get("contacts", [])) and isinstance(
-                            contacts, list
+                        contacts, list
                     ):
                         self._profile_name = contacts[0].get("profile").get("name")
                         self._wa_id = contacts[0].get("wa_id")
 
                     if (status := value.get("statuses", [])) and isinstance(
-                            contacts, list
+                        contacts, list
                     ):
                         self._wa_id = status[0].get("recipient_id")
                         self._status = status[0].get("status")
@@ -208,7 +206,7 @@ class WaPhraseMessage:
                         self._ibm_type = "STS"
 
                     if (messages := value.get("messages", [])) and isinstance(
-                            messages, list
+                        messages, list
                     ):
                         if text := messages[0].get("text", {}).get("body", ""):
                             self._mobile_number = messages[0].get("from", "")

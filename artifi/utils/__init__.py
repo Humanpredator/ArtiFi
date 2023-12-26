@@ -7,9 +7,7 @@ from typing import List, Union
 
 
 class DriveSetInterval:
-    """
-
-    """
+    """ """
 
     def __init__(self, interval, action):
         self.interval = interval
@@ -25,14 +23,12 @@ class DriveSetInterval:
             self.action()
 
     def cancel(self):
-        """
-
-        """
+        """ """
         self.stopEvent.set()
 
 
 def get_nested_key(
-        d: Union[dict, List[dict]], key: str, default="UNKNOWN"
+    d: Union[dict, List[dict]], key: str, default="UNKNOWN"
 ) -> Union[str, dict, List[str]]:
     """
     Used to Get the specific key value from dict junk
@@ -119,7 +115,7 @@ def path_size(path):
 
 def speed_convert(size):
     """Hi human, you can't read bytes?"""
-    power = 2 ** 10
+    power = 2**10
     zero = 0
     units = {0: "", 1: "Kb/s", 2: "MB/s", 3: "Gb/s", 4: "Tb/s"}
     while size > power:
