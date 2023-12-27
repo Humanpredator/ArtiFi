@@ -1,34 +1,25 @@
 """Common function used throughout the package"""
 import mimetypes
 import os
-import threading
-import time
 from typing import List, Union
 
 
-class DriveSetInterval:
+def sanitize_name(string) -> str:
     """
-
+    Remove any chars which not allowed to be named for folder
+    @param string: name of the folder to be created
+    @return: removed char string
     """
-
-    def __init__(self, interval, action):
-        self.interval = interval
-        self.action = action
-        self.stopEvent = threading.Event()
-        thread = threading.Thread(target=self.__setInterval)
-        thread.start()
-
-    def __setInterval(self):
-        nextTime = time.time() + self.interval
-        while not self.stopEvent.wait(nextTime - time.time()):
-            nextTime += self.interval
-            self.action()
-
-    def cancel(self):
-        """
-
-        """
-        self.stopEvent.set()
+    forbidden_chars_windows = {"<", ">", ":", '"', "/", "\\", "|", "?", "*"}
+    forbidden_chars_linux = {"/"}
+    if os.name == "nt":
+        forbidden_chars = forbidden_chars_windows
+    else:
+        forbidden_chars = forbidden_chars_linux
+    sanitize_string = "".join(
+        char for char in string if char not in forbidden_chars
+    )
+    return sanitize_string
 
 
 def get_nested_key(

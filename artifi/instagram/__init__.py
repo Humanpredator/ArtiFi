@@ -18,6 +18,7 @@ from instaloader import (
 
 from artifi import Artifi
 from artifi.instagram.ext import CustomContext
+from artifi.utils import sanitize_name
 
 
 class Instagram(Instaloader):
@@ -120,24 +121,6 @@ class Instagram(Instaloader):
         file_pattern = f"{name[:5]}{post_dt}{post_sid}"
         return file_pattern
 
-    @staticmethod
-    def sanitize_folder_name(string) -> str:
-        """
-        Remove any chars which not allowed to be named for folder
-        @param string: name of the folder to be created
-        @return: removed char string
-        """
-        forbidden_chars_windows = {"<", ">", ":", '"', "/", "\\", "|", "?", "*"}
-        forbidden_chars_linux = {"/"}
-        if os.name == "nt":
-            forbidden_chars = forbidden_chars_windows
-        else:
-            forbidden_chars = forbidden_chars_linux
-        sanitize_string = "".join(
-            char for char in string if char not in forbidden_chars
-        )
-        return sanitize_string
-
     def download_posts(self, user_name) -> None:
         """
         Download all the instagram posts of the given username
@@ -168,7 +151,7 @@ class Instagram(Instaloader):
             user_highlight: Highlight = user_highlight
             album_name = str(user_highlight.title)
             album_path = os.path.join(
-                highlight_path, self.sanitize_folder_name(album_name)
+                highlight_path, sanitize_name(album_name)
             )
             os.makedirs(album_path, exist_ok=True)
             for highlights in user_highlight.get_items():
