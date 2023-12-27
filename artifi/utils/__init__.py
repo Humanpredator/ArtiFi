@@ -16,14 +16,12 @@ def sanitize_name(string) -> str:
         forbidden_chars = forbidden_chars_windows
     else:
         forbidden_chars = forbidden_chars_linux
-    sanitize_string = "".join(
-        char for char in string if char not in forbidden_chars
-    )
+    sanitize_string = "".join(char for char in string if char not in forbidden_chars)
     return sanitize_string
 
 
 def get_nested_key(
-        d: Union[dict, List[dict]], key: str, default="UNKNOWN"
+    d: Union[dict, List[dict]], key: str, default="UNKNOWN"
 ) -> Union[str, dict, List[str]]:
     """
     Used to Get the specific key value from dict junk
@@ -110,7 +108,7 @@ def path_size(path):
 
 def speed_convert(size):
     """Hi human, you can't read bytes?"""
-    power = 2 ** 10
+    power = 2**10
     zero = 0
     units = {0: "", 1: "Kb/s", 2: "MB/s", 3: "Gb/s", 4: "Tb/s"}
     while size > power:
