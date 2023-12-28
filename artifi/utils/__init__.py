@@ -6,20 +6,25 @@ from typing import List, Union
 
 def sanitize_name(string) -> str:
     """
-    Remove any chars which not allowed to be named for folder
+    Remove any chars which are not allowed to be named for a folder
+    Remove double spaces and replace spaces with underscores
     @param string: name of the folder to be created
-    @return: removed char string
+    @return: sanitized string
     """
-    forbidden_chars_windows = {"<", ">", ":", '"', "/", "\\", "|", "?", "*"}
-    forbidden_chars_linux = {"/"}
+    forbidden_chars_windows = {"<", ">", ":", '"', "/", "\\", "|", "?", "*", "&"}
+
     if os.name == "nt":
         forbidden_chars = forbidden_chars_windows
+        # Remove forbidden characters
+        sanitized_string = "".join(
+            char for char in string if char not in forbidden_chars)
+
+        # Remove double spaces and replace spaces with underscores
+        sanitized_string = "_".join(sanitized_string.split())
     else:
-        forbidden_chars = forbidden_chars_linux
-    sanitize_string = "".join(
-        char for char in string if char not in forbidden_chars
-    )
-    return sanitize_string
+        sanitized_string = string.replace('/', ' ')
+
+    return sanitized_string.strip()
 
 
 def get_nested_key(
@@ -48,7 +53,7 @@ def get_nested_key(
     return default
 
 
-def readable_time(seconds: int) -> str:
+def readable_time(seconds) -> str:
     """
 
     @param seconds: UNIX timestamp
