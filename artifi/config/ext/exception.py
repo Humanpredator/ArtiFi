@@ -16,3 +16,11 @@ class DriveUploadError(ArtifiException):
 
 class DriveDownloadError(ArtifiException):
     """Drive Upload Cancelled"""
+
+
+class DriveCloneError(ArtifiException):
+    """Drive Upload Cancelled"""
+
+
+class DrivePropertiesError(ArtifiException):
+    """Drive Upload Cancelled"""

@@ -1,6 +1,5 @@
 """Google Drive"""
 import io
-import json
 import os
 import re
 import time
@@ -11,11 +10,12 @@ from urllib.parse import parse_qs
 
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
-from googleapiclient.http import MediaFileUpload, MediaIoBaseDownload
+from googleapiclient.http import MediaIoBaseDownload, MediaIoBaseUpload
 from tenacity import *
 
 from artifi import Artifi
-from artifi.config.ext.exception import DriveUploadError, DriveError, DriveDownloadError
+from artifi.config.ext.exception import DriveUploadError, DriveError, \
+    DriveDownloadError, DriveCloneError, DrivePropertiesError
 from artifi.google import Google
 from artifi.utils import readable_size, fetch_mime_type, \
     sanitize_name, readable_time
@@ -69,44 +69,50 @@ class GoogleDrive(Google):
                  context,
                  scope,
                  drive_id,
-                 use_service_acc=False,
-                 is_team_drive=False,
+                 use_sa=False,
+                 is_td=False,
                  stop_duplicate=True
                  ):
         super().__init__(context)
         self.context: Artifi = context
         self.scope = scope
         self.parent_id = drive_id
-
-        self.use_service_account = use_service_acc
-        self.service_account_idx = randrange(len(os.listdir("accounts"))) if (
-            self.use_service_account) else None
-        self.is_team_drive = is_team_drive
+        self.use_sa = use_sa
+        self.is_td = is_td
         self.stop_duplicate = stop_duplicate
-        self.sa_count = 0
-        self.alt_auth = False
+
+        self._sa_count = 0
+        self._sa_path = os.path.join(self.context.directory, 'sa')
+        self._sa_idx = randrange(len(os.listdir(self._sa_path))) if (
+            self.use_sa) else None
         self.drive_folder_mime = "application/vnd.google-apps.folder"
         self.dl_file_prefix = "https://drive.google.com/uc?id={}&export=download"
         self.dl_folder_prefix = "https://drive.google.com/drive/folders/{}"
         self._service = self.authorize()
 
-        self.total_bytes = 0
-        self.total_files = 0
-        self.total_folders = 0
-
-        self.transferred_size = 0
-
-    def drive_detail(self, fields=None):
+    def authorize(self):
         """
-        @param fields: 
-        @return: 
-        """
-        data = self._service.about().get(
-            fields=fields if fields else "storageQuota").execute()
-        return data
 
-    @staticmethod
-    def get_id_by_url(link: str):
+        @return:
+        """
+        # Get credentials
+        credentials = self.oauth_creds(self.scope,
+                                       service_user=self.use_sa,
+                                       cname="drive")
+        return build('drive', 'v3', credentials=credentials, cache_discovery=False)
+
+    def switch_service_account(self):
+        """switch to service"""
+        service_account_count = len(os.listdir("accounts"))
+        if self._sa_idx == service_account_count - 1:
+            self._sa_idx = 0
+        self._sa_count += 1
+        self._sa_idx += 1
+        self.context.logger.info(
+            f"Switching to {self._sa_idx}.json service account")
+        self._service = self.authorize()
+
+    def get_id_by_url(self, link: str):
         """
 
         @param link:
@@ -114,117 +120,14 @@ class GoogleDrive(Google):
         """
         if "folders" in link or "file" in link:
             regex = r"https://drive\.google\.com/(drive)?/?u?/?\d?/?(mobile)?/?(file)?(folders)?/?d?/([-\w]+)[?+]?/?(w+)?"
-            res = re.search(regex, link)
-            if res is None:
-                raise IndexError("G-Drive ID not found.")
+            if not (res := re.search(regex, link)):
+                self.context.logger.info(
+                    f'No Folder or File Was Found On Given Link!')
+                return None
             return res.group(5)
         parsed = urlparse.urlparse(link)
         return parse_qs(parsed.query)['id'][0]
 
-    def get_file_size(self, **kwargs):
-        """
-
-        @param kwargs:
-        """
-        try:
-            size = int(kwargs['size'])
-        except:
-            size = 0
-        self.total_bytes += size
-
-    def get_folder_size(self, **kwargs) -> None:
-
-        """
-
-        @param kwargs:
-        @return:
-        """
-        files = self.list_files(kwargs['id'])
-        if len(files) == 0:
-            return
-        for file_ in files:
-            if file_['mimeType'] == self.drive_folder_mime:
-                self.total_folders += 1
-                self.get_folder_size(**file_)
-            else:
-                self.total_files += 1
-                self.get_file_size(**file_)
-
-    def switch_service_account(self):
-        """switch to service"""
-        service_account_count = len(os.listdir("accounts"))
-        if self.service_account_idx == service_account_count - 1:
-            self.service_account_idx = 0
-        self.sa_count += 1
-        self.service_account_idx += 1
-        self.context.logger.info(
-            f"Switching to {self.service_account_idx}.json service account")
-        self._service = self.authorize()
-
-    @retry(wait=wait_exponential(multiplier=2, min=3, max=6),
-           stop=stop_after_attempt(5),
-           retry=retry_if_exception_type(HttpError))
-    def set_permission(self, drive_id):
-        """
-
-        @param drive_id: 
-        @return: 
-        """
-        if not self.is_team_drive:
-            permissions = {
-                'role': 'reader',
-                'type': 'anyone',
-                'value': None,
-                'withLink': True
-            }
-            return self._service.permissions().create(supportsTeamDrives=True,
-                                                      fileId=drive_id,
-                                                      body=permissions).execute()
-        return None
-
-    @retry(wait=wait_exponential(multiplier=2, min=3, max=6),
-           stop=stop_after_attempt(5),
-           retry=retry_if_exception_type(HttpError))
-    def get_metadata(self, file_id):
-        """
-
-        @param file_id:
-        @return:
-        """
-        return self._service.files().get(supportsAllDrives=True, fileId=file_id,
-                                         fields="name,id,mimeType,size").execute()
-
-    @retry(wait=wait_exponential(multiplier=2, min=3, max=6),
-           stop=stop_after_attempt(5),
-           retry=retry_if_exception_type(HttpError))
-    def list_files(self, folder_id):
-        """
-
-        @param folder_id:
-        @return:
-        """
-        page_token = None
-        q = f"'{folder_id}' in parents"
-        files = []
-        while True:
-            response = self._service.files().list(supportsTeamDrives=True,
-                                                  includeTeamDriveItems=True,
-                                                  q=q,
-                                                  spaces='drive',
-                                                  pageSize=200,
-                                                  fields='nextPageToken, files(id, name, mimeType,size)',
-                                                  corpora='allDrives',
-                                                  orderBy='folder, name',
-                                                  pageToken=page_token).execute()
-            files.extend(response.get('files', []))
-            page_token = response.get('nextPageToken', None)
-            if page_token is None:
-                break
-        return files
-
-    @retry(wait=wait_exponential(multiplier=2, min=3, max=6),
-           stop=stop_after_attempt(5),
-           retry=retry_if_exception_type(HttpError))
     def get_file_id(self, file_name, mime_type, parent_id):
         """
         Check if a file with the same name, mime type, and parent directory ID already exists.
@@ -244,9 +147,6 @@ class GoogleDrive(Google):
         files = results.get("files", [])
         return files[0]["id"] if files else None
 
-    @retry(wait=wait_exponential(multiplier=2, min=3, max=6),
-           stop=stop_after_attempt(5),
-           retry=retry_if_exception_type(HttpError))
     def get_folder_id(self, directory_name, parent_id):
         """
         @param directory_name: Name of the directory to be checked.
@@ -268,6 +168,42 @@ class GoogleDrive(Google):
             return files[0]["id"]  # Return the ID of the first matching directory
         else:
             return None
+
+    def set_permission(self, drive_id):
+        """
+
+        @param drive_id: 
+        @return: 
+        """
+        if not self.is_td:
+            permissions = {
+                'role': 'reader',
+                'type': 'anyone',
+                'value': None,
+                'withLink': True
+            }
+            return self._service.permissions().create(supportsTeamDrives=True,
+                                                      fileId=drive_id,
+                                                      body=permissions).execute()
+        return None
+
+    def get_metadata(self, file_id):
+        """
+
+        @param file_id:
+        @return:
+        """
+        return self._service.files().get(supportsAllDrives=True, fileId=file_id,
+                                         fields="name,id,mimeType,size").execute()
+
+    def drive_detail(self, fields=None):
+        """
+        @param fields:
+        @return:
+        """
+        data = self._service.about().get(
+            fields=fields if fields else "storageQuota").execute()
+        return data
 
     @retry(wait=wait_exponential(multiplier=2, min=3, max=6),
            stop=stop_after_attempt(5),
@@ -301,238 +237,61 @@ class GoogleDrive(Google):
         ).execute()
 
         file_id = file.get("id")
-        if not self.is_team_drive:
+        if not self.is_td:
             self.set_permission(file_id)
 
         self.context.logger.info(
-            f"Created G-Drive Folder:\nName: {file.get('name')}\nID: {file_id}"
+            f"Created G-Drive FolderName: {file.get('name')}"
         )
         return file_id
-
-    def authorize(self):
-        """
-
-        @return:
-        """
-        # Get credentials
-        credentials = self.oauth_creds(self.scope,
-                                       service_user=self.use_service_account,
-                                       cname="drive")
-        return build('drive', 'v3', credentials=credentials, cache_discovery=False)
-
-    def alt_authorize(self):
-        """
-
-        @return:
-        """
-        if self.use_service_account and not self.alt_auth:
-            self.alt_auth = True
-            credentials = self.oauth_creds(self.scope,
-                                           service_user=self.use_service_account,
-                                           cname="drive")
-            return build('drive', 'v3', credentials=credentials, cache_discovery=False)
-        return None
-
-    def delete_files(self, link: str):
-        """
-
-        @param link:
-        @return:
-        """
-        try:
-            file_id = self.get_id_by_url(link)
-        except (KeyError, IndexError):
-            msg = "Google Drive ID could not be found in the provided link"
-            return msg
-        msg = ''
-        try:
-            res = self._service.files().delete(fileId=file_id,
-                                               supportsTeamDrives=self.is_team_drive).execute()
-            msg = res
-        except HttpError as err:
-            self.context.logger.error(str(err))
-            if "File not found" in str(err):
-                msg = "No such file exist"
-            else:
-                msg = "Something went wrong check log"
-        finally:
-            return msg
 
     @retry(wait=wait_exponential(multiplier=2, min=3, max=6),
            stop=stop_after_attempt(5),
            retry=retry_if_exception_type(HttpError))
-    def _copy_sfile(self, file_id, dest_id):
+    def List(self, folder_id):
         """
 
-        @param file_id:
-        @param dest_id:
-        @return:
-        """
-        body = {
-            'parents': [dest_id]
-        }
-
-        try:
-            return (
-                self._service.files()
-                .copy(supportsAllDrives=True, fileId=file_id, body=body)
-                .execute()
-            )
-
-        except HttpError as err:
-            if err.resp.get('content-type', '').startswith('application/json'):
-                reason = json.loads(err.content).get('error').get('errors')[0].get(
-                    'reason')
-                if reason in ['userRateLimitExceeded', 'dailyLimitExceeded']:
-                    if self.use_service_account:
-                        if self.sa_count == len(os.listdir("accounts")):
-                            self.is_cancelled = True
-                            raise err
-                        else:
-                            self.switch_service_account()
-                            return self._copy_sfile(file_id, dest_id)
-                    else:
-                        self.is_cancelled = True
-                        self.context.logger.info(f"Got: {reason}")
-                        raise err
-                else:
-                    raise err
-
-    def _clone_ext(self, link):
-        """
-
-        @param link:
-        @return:
-        """
-        try:
-            file_id = self.get_id_by_url(link)
-        except (KeyError, IndexError):
-            msg = "Google Drive ID could not be found in the provided link"
-            return msg, "", "", ""
-        self.context.logger.info(f"File ID: {file_id}")
-        try:
-            drive_file = self._service.files().get(fileId=file_id,
-                                                   fields="id, name, mimeType, size",
-                                                   supportsTeamDrives=True).execute()
-            name = drive_file['name']
-            self.context.logger.info(f"Checking: {name}")
-            if drive_file['mimeType'] == self.drive_folder_mime:
-                self.get_folder_size(**drive_file)
-            else:
-                try:
-                    self.total_files += 1
-                    self.get_file_size(**drive_file)
-                except TypeError:
-                    pass
-            clonesize = self.total_bytes
-            files = self.total_files
-        except Exception as err:
-            err = str(err).replace('>', '').replace('<', '')
-            self.context.logger.error(err)
-            if "File not found" in str(err):
-                token_service = self.alt_authorize()
-                if token_service is not None:
-                    self._service = token_service
-                    return self._clone_ext(link)
-                msg = "File not found."
-            else:
-                msg = f"Error.\n{err}"
-            return msg, "", "", ""
-        return "", clonesize, name, files
-
-    def _clone_folder(self, local_path, folder_id, parent_id):
-        """
-        @param local_path:
         @param folder_id:
-        @param parent_id:
         @return:
         """
-        self.context.logger.info(f"Syncing: {local_path}")
-        files = self.list_files(folder_id)
-        if len(files) == 0:
-            return parent_id
-        for file in files:
-            if file.get('mimeType') == self.drive_folder_mime:
-                self.total_folders += 1
-                file_path = os.path.join(local_path, file.get('name'))
-                current_dir_id = self.create_folder(file.get('name'), parent_id)
-                self._clone_folder(file_path, file.get('id'),
-                                   current_dir_id)
-            else:
-                try:
-                    self.total_files += 1
-                    self.transferred_size += int(file.get('size'))
-                except TypeError:
-                    pass
-                self._copy_sfile(file.get('id'), parent_id)
-            if self.is_cancelled:
+        page_token = None
+        q = f"'{folder_id}' in parents"
+        files = []
+        while True:
+            response = self._service.files().list(supportsTeamDrives=True,
+                                                  includeTeamDriveItems=True,
+                                                  q=q,
+                                                  spaces='drive',
+                                                  pageSize=200,
+                                                  fields='nextPageToken, files(id, name, mimeType,size)',
+                                                  corpora='allDrives',
+                                                  orderBy='folder, name',
+                                                  pageToken=page_token).execute()
+            files.extend(response.get('files', []))
+            page_token = response.get('nextPageToken', None)
+            if page_token is None:
                 break
+        return files
 
-    def clone(self, link):
+    @retry(wait=wait_exponential(multiplier=2, min=3, max=6),
+           stop=stop_after_attempt(5),
+           retry=retry_if_exception_type(HttpError))
+    def Delete(self, link: str):
         """
 
         @param link:
         @return:
         """
-        self.is_cloning = True
-        cl_start_time = time.time()
-        try:
-            file_id = self.get_id_by_url(link)
-        except (KeyError, IndexError):
-            msg = "Google Drive ID could not be found in the provided link"
-            return msg
+        file_id = self.get_id_by_url(link)
         msg = {}
-        self.context.logger.info(f"File ID: {file_id}")
         try:
-            meta = self.get_metadata(file_id)
-            if meta.get("mimeType") == self.drive_folder_mime:
-                dir_id = self.create_folder(meta.get('name'), self.parent_id)
-                self._clone_folder(meta.get('name'), meta.get('id'),
-                                   dir_id)
-                durl = self.dl_folder_prefix.format(dir_id)
-                if self.is_cancelled:
-                    self.context.logger.info("Deleting cloned data from Drive...")
-                    msg = self.delete_files(durl)
-                    self.context.logger.info(f"{msg}")
-                    return "your clone has been stopped and cloned data has been deleted!", "cancelled"
-                msg['filename'] = meta.get("name")
-                msg['size'] = readable_size(self.transferred_size)
-                msg['type'] = "Folder"
-                msg['sub_folders'] = self.total_folders
-                msg['files'] = self.total_files
-
-            else:
-                file = self._copy_sfile(meta.get('id'), self.parent_id)
-                msg['filename'] = file.get("name")
-                durl = self.dl_file_prefix.format(file.get("id"))
-                self.context.logger.info(durl)
-                try:
-                    msg['type'] = file.get('mimeType')
-                except:
-                    msg['type'] = 'File'
-                try:
-                    msg['size'] = readable_size(int(meta.get("size")))
-                except TypeError:
-                    pass
-        except RetryError as err:
-            self.context.logger.error(
-                f"Total Attempts: {err.last_attempt.attempt_number}")
-            err = err.last_attempt.exception()
-            if "User rate limit exceeded" in str(err):
-                self.context.logger.error("User Limit Exceeded...!")
-                token_service = self.alt_authorize()
-                if token_service is not None:
-                    self._service = token_service
-                    return self.clone(link)
-        except HttpError as e:
-            if e.resp.status == 404:
-                self.context.logger.error(
-                    f"HttpError {e.reason}")
-            else:
-                token_service = self.alt_authorize()
-                if token_service is not None:
-                    self._service = token_service
-                    return self.clone(link)
+            res = self._service.files().delete(fileId=file_id,
+                                               supportsTeamDrives=self.is_td).execute()
+            msg = {'message': f"File Deleted Successfully! {res}"}
+        except HttpError as err:
+            reason = err.error_details[0]["reason"]
+            self.context.logger.error(f"Failed To Delete: {reason}")
+            DriveError(f"Something Went Wrong: {err}")
         return msg
 
     def Upload(self, directory_path):
@@ -549,6 +308,20 @@ class GoogleDrive(Google):
         """
         return DriveDownload(self, drive_link)
 
+    def Properties(self, drive_link):
+        """
+
+        @return:
+        """
+        return DriveProperties(self, drive_link)
+
+    def Clone(self, drive_link):
+        """
+
+        @return:
+        """
+        return DriveCloner(self, drive_link)
+
     @property
     def service(self):
         """
@@ -562,17 +335,20 @@ class DriveUpload:
     """ Drive Upload Functionality"""
 
     def __init__(self, gdrive, directory_path):
+        self.__UPLOAD_STARTED_TIME = time.time()
+
         self.gdrive: GoogleDrive = gdrive
         self._upload_path = directory_path
-        self.__UPLOADING = True
+
+        self.__CONTENT_PROPERTIES__ = self._directory_properties()
+
+        self.__FAILED_UPLOAD = []
 
         self.__TOTAL_FILES = 0
         self.__TOTAL_FOLDERS = 0
         self.__CURRENT_FILE_NAME = None
-        self.__CURRENT_FILE_SIZE = None
+        self.__UPLOADED_BYTES__ = 0
 
-        self.__UPLOAD_STARTED_TIME = time.time()
-        self.__UPLOAD_PROGRESS = None
         self.is_cancelled = False
 
     def on_upload_progress(self):
@@ -583,19 +359,10 @@ class DriveUpload:
         progress = {
             'filename': self.__CURRENT_FILE_NAME,
             'status': 'Uploading',
-            'size': readable_size(self.__CURRENT_FILE_SIZE),
-            'progress': f'{readable_size(self.__CURRENT_FILE_SIZE)}/{readable_size(self.__CURRENT_FILE_SIZE)}',
+            'progress': f'{readable_size(self.__UPLOADED_BYTES__)}/{readable_size(self.__CONTENT_PROPERTIES__["size"])}',
             "elapsed": readable_time(time.time() - self.__UPLOAD_STARTED_TIME),
-            'speed': '0/s'
+            'speed': f'{readable_size(self.__UPLOADED_BYTES__ / (time.time() + 1 - self.__UPLOAD_STARTED_TIME))}/s'
         }
-        if self.__UPLOAD_PROGRESS:
-            self.__CURRENT_FILE_SIZE = self.__UPLOAD_PROGRESS.total_size
-            upload_size = self.__CURRENT_FILE_SIZE * self.__UPLOAD_PROGRESS.progress()
-            progress[
-                "speed"] = f"{readable_size(upload_size / (time.time() - self.__UPLOAD_STARTED_TIME))}/s"
-            progress[
-                'progress'] = f"{readable_size(upload_size)}/{readable_size(self.__CURRENT_FILE_SIZE)}"
-
         return progress
 
     def _upload_folder(self, input_directory, parent_id):
@@ -652,12 +419,9 @@ class DriveUpload:
         @param parent_id:
         @return:
         """
-        drive_file = None
         file_size = os.path.getsize(file_path)
-
         self.__CURRENT_FILE_NAME = file_name
-        self.__CURRENT_FILE_SIZE = file_size
-
+        self.gdrive.context.logger.info(f"Uploading FileName: {file_name}")
         # File body description
         file_metadata = {
             'name': file_name,
@@ -665,59 +429,58 @@ class DriveUpload:
             'mimeType': mime_type,
             "parents": [parent_id]
         }
-
-        media_body = MediaFileUpload(
-            file_path,
-            mimetype=mime_type,
-            resumable=False
-        ) if file_size == 0 else MediaFileUpload(
-            file_path,
+        fh = io.FileIO(file_path, 'rb')
+        media_body = MediaIoBaseUpload(
+            fh,
             mimetype=mime_type,
             resumable=True,
-            chunksize=50 * 1024 * 1024
+            chunksize=10 * 1024 * 1024
         )
+        ul_file = self._duplicate_file(file_metadata, media_body)
 
-        if (
-                ul_file := self._duplicate_file(file_metadata,
-                                                media_body)) and file_size > 0:
+        while True:
+            if self.is_cancelled:
+                fh.close()
+                raise DriveUploadError("Drive Upload Cancelled")
+            try:
+                cr_state, chunk_state = ul_file.next_chunk()
+                self.__UPLOADED_BYTES__ += (
+                    file_size if chunk_state
+                    else cr_state.total_size * cr_state.progress())
+                if chunk_state:
+                    file_id = chunk_state['id']
+                    break
+            except HttpError as err:
+                reason = err.error_details[0]["reason"]
 
-            while not drive_file:
-                if self.is_cancelled:
-                    raise DriveUploadError("Drive Upload Cancelled")
-                try:
-                    self.__UPLOAD_PROGRESS, drive_file = ul_file.next_chunk()
-                except HttpError as err:
-                    reason = err.error_details[0]["reason"]
+                if self.gdrive.use_sa and reason in [
+                    'userRateLimitExceeded',
+                    'dailyLimitExceeded',
+                ]:
+                    self.gdrive.switch_service_account()
+                    self.gdrive.context.logger.info(
+                        f"{reason}, Using Service Account And Trying Again...!")
+                    return self._upload_file(file_path, file_name, mime_type,
+                                             parent_id)
+                else:
+                    self.__FAILED_UPLOAD.append(file_name)
+                    self.is_cancelled = True
+                    self.gdrive.context.logger.info(f"Got: {reason}")
+                    raise DriveError(f"Something Went Wrong {err}")
 
-                    if self.gdrive.use_service_account and reason in [
-                        'userRateLimitExceeded',
-                        'dailyLimitExceeded',
-                    ]:
-                        self.gdrive.switch_service_account()
-                        self.gdrive.context.logger.info(
-                            f"{reason}, Using Service Account And Trying Again...!")
-                        return self._upload_file(file_path, file_name, mime_type,
-                                                 parent_id)
-                    else:
-                        self.is_cancelled = True
-                        self.gdrive.context.logger.info(f"Got: {reason}")
-                        raise DriveError(f"Something Went Wrong {err}")
-        else:
-            drive_file = ul_file.execute()
-
-        self.gdrive.set_permission(drive_file['id'])
+        self.gdrive.set_permission(file_id)
         # Define file instance and get url for download
         file = self.gdrive.service.files().get(supportsTeamDrives=True,
-                                               fileId=drive_file['id']).execute()
+                                               fileId=file_id).execute()
         file_url = self.gdrive.dl_file_prefix.format(file.get('id'))
         self.__TOTAL_FILES += 1
         return file_url
 
-    @staticmethod
-    def _local_directory_info(directory_path):
+    def _directory_properties(self):
+        self.gdrive.context.logger.info("Counting Local Path:")
         output = {'size': 0, 'sub_folder': 0, 'files': 0}
 
-        for root, sub_folders, files in os.walk(directory_path):
+        for root, sub_folders, files in os.walk(self._upload_path):
             output['sub_folder'] += len(sub_folders)
             output['files'] += len(files)
 
@@ -739,8 +502,6 @@ class DriveUpload:
             mime_type = fetch_mime_type(self._upload_path)
             link = self._upload_file(self._upload_path, filename, mime_type,
                                      self.gdrive.parent_id)
-            if self.is_cancelled:
-                raise DriveUploadError('Upload Has Been Manually Cancelled!')
             if not link:
                 raise DriveError('Unable to Get File Link!')
             self.gdrive.context.logger.info(f"Uploaded To G-Drive: {self._upload_path}")
@@ -757,17 +518,14 @@ class DriveUpload:
             if not result:
                 raise DriveUploadError('Upload has been manually cancelled!')
             link = f"https://drive.google.com/folderview?id={root_dir_id}"
-            if self.is_cancelled:
-                self.gdrive.context.logger.info("Deleting uploaded data from Drive...")
-                msg = self.gdrive.delete_files(link)
-                self.gdrive.context.logger.info(f"{msg}")
-            self.gdrive.context.logger.info(f"Uploaded To G-Drive: {self._upload_path}")
             output['name'] = root_dir_name
             output['type'] = "Folder"
             output['link'] = link
         output['files'] = self.__TOTAL_FILES
         output['folders'] = self.__TOTAL_FOLDERS
+        output['size'] = readable_size(self.__CONTENT_PROPERTIES__['size'])
         output['elapsed'] = readable_time(time.time() - self.__UPLOAD_STARTED_TIME)
+        output['failed'] = self.__FAILED_UPLOAD
         return output
 
 
@@ -781,15 +539,14 @@ class DriveDownload:
         self._drive_link = drive_link
         self.__DOWNLOADING = True
         self.__DOWNLOAD_START_TIME = time.time()
+        self.__CONTENT_PROPERTIES__ = self.gdrive.Properties(
+            self._drive_link).properties()
 
+        self.__DOWNLOADED_BYTES__ = 0
+        self.__CURRENT_FILE_NAME = None
         self.__TOTAL_FILES = 0
         self.__TOTAL_FOLDERS = 0
         self.__FAILED_DOWNLOAD = []
-
-        self.__CURRENT_FILE_NAME = None
-        self.__CURRENT_FILE_SIZE = None
-
-        self.__DOWNLOAD_PROGRESS = None
         self.is_cancelled = False
 
     def on_download_progress(self):
@@ -800,30 +557,20 @@ class DriveDownload:
         progress = {
             'filename': self.__CURRENT_FILE_NAME,
             'status': 'Downloading',
-            'size': readable_size(self.__CURRENT_FILE_SIZE),
-            'progress': f'{readable_size(self.__CURRENT_FILE_SIZE)}/{readable_size(self.__CURRENT_FILE_SIZE)}',
+            'progress': f'{readable_size(self.__DOWNLOADED_BYTES__)}/{readable_size(self.__CONTENT_PROPERTIES__["size"])}',
             "elapsed": readable_time(time.time() - self.__DOWNLOAD_START_TIME),
-            'speed': '0/s'
+            'speed': f'{readable_size(self.__DOWNLOADED_BYTES__ / (time.time() + 1 - self.__DOWNLOAD_START_TIME))}/s'
         }
-        if self.__DOWNLOAD_PROGRESS:
-            self.__CURRENT_FILE_SIZE = self.__DOWNLOAD_PROGRESS.total_size
-            upload_size = self.__CURRENT_FILE_SIZE * self.__DOWNLOAD_PROGRESS.progress()
-            progress[
-                "speed"] = f"{readable_size(upload_size / (time.time() - self.__DOWNLOAD_START_TIME))}/s"
-            progress[
-                'progress'] = f"{readable_size(upload_size)}/{readable_size(self.__CURRENT_FILE_SIZE)}"
-
         return progress
 
-    def _download_folder(self, folder_id, folder_path, folder_name):
+    def _download_folder(self, path, file):
         """
 
-        @param folder_id:
-        @param folder_path:
-        @param folder_name:
+        @param path:
+        @param file:
         """
-        new_folder_name = sanitize_name(folder_name)
-        path = os.path.join(folder_path, new_folder_name)
+        new_folder_name = sanitize_name(file['name'])
+        path = os.path.join(path, new_folder_name)
         if not os.path.exists(path):
             os.makedirs(path, exist_ok=True)
         result = []
@@ -834,7 +581,7 @@ class DriveDownload:
             files = self.gdrive.service.files().list(
                 supportsTeamDrives=True,
                 includeTeamDriveItems=True,
-                q=f"'{folder_id}' in parents",
+                q=f"'{file['id']}' in parents",
                 fields='nextPageToken, files(id, name, mimeType, size, shortcutDetails)',
                 pageToken=page_token,
                 pageSize=1000).execute()
@@ -847,78 +594,72 @@ class DriveDownload:
         for item in result:
             if self.is_cancelled:
                 raise DriveDownloadError("Download Cancelled By User...!")
-            file_id = item['id']
-            filename = item['name']
-
             mime_type = item['mimeType']
             shortcut_details = item.get('shortcutDetails', None)
             if shortcut_details:
-                file_id = shortcut_details['targetId']
                 mime_type = shortcut_details['targetMimeType']
             if mime_type == 'application/vnd.google-apps.folder':
                 self.gdrive.context.logger.info(
                     f'Downloading FolderName:{new_folder_name}'
                 )
-                self._download_folder(file_id, path, filename)
+                self._download_folder(path, item)
                 self.__TOTAL_FOLDERS += 1
 
-            elif not os.path.isfile(path + filename):
-                self._download_file(file_id, path, filename, mime_type)
+            elif not os.path.isfile(path + item['name']):
+                self._download_file(path, item)
         return True
 
     @retry(wait=wait_exponential(multiplier=2, min=3, max=6),
            stop=stop_after_attempt(5),
            retry=retry_if_exception_type(HttpError))
-    def _download_file(self, file_id, path, filename, mime_type):
+    def _download_file(self, path, file):
         """
-
-        @param file_id:
-        @param path:
-        @param filename:
-        @param mime_type:
         @return:
         """
-        new_file_name = sanitize_name(filename)
+        new_file_name = sanitize_name(file['name'])
 
         self.gdrive.context.logger.info(
             f"Downloading FileName: {new_file_name}"
         )
-        if crm := export_mime.get(mime_type, None):
-            request = self.gdrive.service.files().export(fileId=file_id,
+        if crm := export_mime.get(file['mimeType'], None):
+            request = self.gdrive.service.files().export(fileId=file['id'],
                                                          mimeType=crm[0])
             new_file_name += crm[1]
         else:
-            request = self.gdrive.service.files().get_media(fileId=file_id)
+            request = self.gdrive.service.files().get_media(fileId=file['id'])
 
         self.__CURRENT_FILE_NAME = new_file_name
         file_path = os.path.join(path, new_file_name)
-
         fh = io.FileIO(file_path, 'wb')
-        downloader = MediaIoBaseDownload(fh, request, chunksize=50 * 1024 * 1024)
-        done = False
-        while not done:
+        downloader = MediaIoBaseDownload(fh, request,
+                                         chunksize=10 * 1024 * 1024)
+        while True:
             if self.is_cancelled:
                 fh.close()
                 raise DriveDownloadError("Upload Cancelled By User...!")
             try:
-                self.__DOWNLOAD_PROGRESS, done = downloader.next_chunk()
+                cr_state, chunk_status = downloader.next_chunk()
+                self.__DOWNLOADED_BYTES__ += (
+                    cr_state.total_size if chunk_status
+                    else cr_state.total_size * cr_state.progress())
+                if chunk_status:
+                    break
             except HttpError as err:
                 reason = err.error_details[0]["reason"]
-                print("==============>", err)
                 if reason == "notFound":
-                    print("here")
                     self.gdrive.context.logger.error(
                         f"Failed To Download FileName: {new_file_name} Reason: {reason}"
                     )
-                    return self.__FAILED_DOWNLOAD.append(file_id)
+                    return self.__FAILED_DOWNLOAD.append(file['id'])
 
-                elif self.gdrive.use_service_account and reason in [
+                elif self.gdrive.use_sa and reason in [
                     'userRateLimitExceeded',
                     'dailyLimitExceeded',
                 ]:
                     self.gdrive.switch_service_account()
                     self.gdrive.context.logger.info(
                         f"{reason}, Using Service Account And Trying Again...!")
+                    self._download_file(path, file)
                 else:
                     self.gdrive.context.logger.error(
                         f"Failed To Download FileName: {new_file_name} Reason: {reason}"
@@ -931,25 +672,26 @@ class DriveDownload:
         """
         @return:
         """
-        file_id = self.gdrive.get_id_by_url(self._drive_link)
+        file_id = self.__CONTENT_PROPERTIES__['file_id']
         path = os.path.join(self.gdrive.context.directory,
                             str(uuid.uuid4()).lower()[:5])
         if not os.path.exists(path):
             os.makedirs(path, exist_ok=True)
         output = {}
-        meta = self.gdrive.get_metadata(file_id)
-        output['name'] = meta.get('name')
+        file = self.gdrive.get_metadata(file_id)
+        output['name'] = file.get('name')
         output['path'] = path
-        if meta.get("mimeType") == self.gdrive.drive_folder_mime:
+        if file.get("mimeType") == self.gdrive.drive_folder_mime:
             output['type'] = "Folder"
-            self._download_folder(file_id, path, meta.get('name'))
+            self._download_folder(path, file)
         else:
             output['type'] = "File"
-            self._download_file(file_id, path, meta.get('name'),
-                                meta.get('mimeType'))
+            self._download_file(path, file)
         output['files'] = self.__TOTAL_FILES
         output['folders'] = self.__TOTAL_FOLDERS
+        output['size'] = readable_size(self.__CONTENT_PROPERTIES__['size'])
         output['elapsed'] = readable_time(time.time() - self.__DOWNLOAD_START_TIME)
+        output['failed'] = self.__FAILED_DOWNLOAD
         return output
 
 
@@ -961,18 +703,48 @@ class DriveProperties:
     def __init__(self, gdrive, drive_link):
         self.gdrive: GoogleDrive = gdrive
         self._drive_link = drive_link
+        self.__TOTAL_BYTES = 0
+        self.__TOTAL_FILES = 0
+        self.__TOTAL_FOLDERS = 0
+        self.is_cancelled = False
 
-    def properties(self, link):
+    def _get_file_size(self, **kwargs):
         """
 
-        @param link:
-        @return:
+        @param kwargs:
         """
         try:
-            file_id = self.gdrive.get_id_by_url(link)
-        except (KeyError, IndexError):
-            msg = "Google Drive ID could not be found in the provided link"
-            return msg
+            size = kwargs['size']
+        except KeyError:
+            size = 0
+        self.__TOTAL_BYTES += int(size)
+        return True
+
+    def _get_folder_size(self, **kwargs):
+
+        """
+
+        @param kwargs:
+        @return:
+        """
+        files = self.gdrive.List(kwargs['id'])
+        for file_ in files:
+            if self.is_cancelled:
+                raise DrivePropertiesError("Properties was cancelled by User!")
+
+            if file_['mimeType'] == self.gdrive.drive_folder_mime:
+                self.__TOTAL_FOLDERS += 1
+                self._get_folder_size(**file_)
+            else:
+                self.__TOTAL_FILES += 1
+                self._get_file_size(**file_)
+        return True
+
+    def properties(self):
+        """
+        @return:
+        """
+        file_id = self.gdrive.get_id_by_url(self._drive_link)
         msg = {}
         self.gdrive.context.logger.info(f"File ID: {file_id}")
         drive_file = self.gdrive.service.files().get(fileId=file_id,
@@ -981,24 +753,155 @@ class DriveProperties:
         name = drive_file['name']
         self.gdrive.context.logger.info(f"Counting: {name}")
         if drive_file['mimeType'] == self.gdrive.drive_folder_mime:
-            self.gdrive.get_folder_size(**drive_file)
+            self._get_folder_size(**drive_file)
             msg['filename'] = name
-            msg['size'] = readable_size(self.gdrive.total_bytes)
+            msg['file_id'] = file_id
+            msg['size'] = self.__TOTAL_BYTES
             msg['type'] = "Folder"
-            msg['sub_folders'] = self.gdrive.total_folders
-            msg['files'] = self.gdrive.total_files
+            msg['sub_folders'] = self.__TOTAL_FOLDERS
+            msg['files'] = self.__TOTAL_FILES
         else:
+            self._get_file_size(**drive_file)
             msg['filename'] = name
-            try:
-                msg['type'] = drive_file['mimeType']
-            except:
-                msg['type'] = 'File'
-            try:
-                self.gdrive.total_files += 1
-                self.gdrive.get_file_size(**drive_file)
-                msg['size'] = readable_size(self.gdrive.total_bytes)
-                msg['files'] = self.gdrive.total_files
-            except TypeError:
-                pass
+            msg['file_id'] = file_id
+            msg['type'] = 'File'
+            msg['size'] = self.__TOTAL_BYTES
+            msg['files'] = self.__TOTAL_FILES
 
+        return msg
+
+
+class DriveCloner:
+    """
+    Copy Functionality
+    """
+
+    def __init__(self, gdrive, drive_link):
+        self.gdrive: GoogleDrive = gdrive
+        self._drive_link = drive_link
+        self.__CLONE_STARTED_TIME = time.time()
+        self.__CONTENT_PROPERTIES__ = self.gdrive.Properties(
+            self._drive_link).properties()
+        self.__FAILED_CLONE = []
+
+        self.__TRANSFERRED_BYTES = 0
+
+        self.__TOTAL_FILES = 0
+        self.__TOTAL_FOLDERS = 0
+        self.__CURRENT_FILE_NAME = None
+
+        self.is_cancelled = False
+
+    def on_clone_progress(self):
+        """
+
+        @return:
+        """
+        progress = {
+            'filename': self.__CURRENT_FILE_NAME,
+            'status': 'Downloading',
+            'progress': f'{readable_size(self.__TRANSFERRED_BYTES)}/{readable_size(self.__CONTENT_PROPERTIES__["size"])}',
+            "elapsed": readable_time(time.time() - self.__CLONE_STARTED_TIME),
+            'speed': f'{readable_size(self.__TRANSFERRED_BYTES / (time.time() + 1 - self.__CLONE_STARTED_TIME))}/s'
+        }
+        return progress
+
+    @retry(wait=wait_exponential(multiplier=2, min=3, max=6),
+           stop=stop_after_attempt(5),
+           retry=retry_if_exception_type(HttpError))
+    def _copy_file(self, file, dest_id):
+        """
+
+        @param file:
+        @param dest_id:
+        @return:
+        """
+
+        file_metadata = {
+            'name': file['name'],
+            'description': 'Cloned by ArtiFi',
+            'mimeType': file['mimeType'],
+            "parents": [dest_id]
+        }
+        self.gdrive.context.logger.info(f"Cloning FileName:{file['name']}")
+        try:
+            drive_file = self.gdrive.service.files().copy(supportsAllDrives=True,
+                                                          fileId=file.get('id'),
+                                                          body=file_metadata).execute()
+            self.__TRANSFERRED_BYTES += int(file['size'])
+        except HttpError as err:
+            reason = err.error_details[0]["reason"]
+
+            if self.gdrive.use_sa and reason in [
+                'userRateLimitExceeded',
+                'dailyLimitExceeded',
+            ]:
+                self.gdrive.switch_service_account()
+                self.gdrive.context.logger.info(
+                    f"{reason}, Using Service Account And Trying Again...!")
+                return self._copy_file(file, dest_id)
+            else:
+                self.__FAILED_CLONE.append(file['id'])
+                self.is_cancelled = True
+                self.gdrive.context.logger.info(f"Got: {reason}")
+                raise DriveError(f"Something Went Wrong {err}")
+
+        self.gdrive.set_permission(drive_file['id'])
+        # Define file instance and get url for download
+        file = self.gdrive.service.files().get(supportsTeamDrives=True,
+                                               fileId=drive_file['id']).execute()
+        file_url = self.gdrive.dl_file_prefix.format(file.get('id'))
+        self.__TOTAL_FILES += 1
+        return file_url
+
+    def _clone_folder(self, local_path, file_id, parent_id):
+        """
+
+        @param local_path:
+        @param file_id:
+        @param parent_id:
+        @return:
+        """
+        files = self.gdrive.List(file_id)
+        for item in files:
+            if self.is_cancelled:
+                raise DriveCloneError(
+                    "Cloning Was Cancelled By User!")
+            if item.get('mimeType') == self.gdrive.drive_folder_mime:
+                self.__TOTAL_FOLDERS += 1
+                self.gdrive.context.logger.info(f"Syncing: {item['name']}")
+                file_path = os.path.join(local_path, item.get('name'))
+                current_dir_id = self.gdrive.create_folder(item.get('name'), parent_id)
+
+                self._clone_folder(file_path, item['id'], current_dir_id)
+            else:
+                self._copy_file(item, parent_id)
+
+        return True
+
+    def clone(self):
+        """
+        @return:
+        """
+        file_id = self.__CONTENT_PROPERTIES__['file_id']
+        msg = {}
+        file = self.gdrive.get_metadata(file_id)
+        if file.get("mimeType") == self.gdrive.drive_folder_mime:
+            self.gdrive.context.logger.info(f"Cloning: {file.get('name')}")
+            dir_id = self.gdrive.create_folder(file.get('name'), self.gdrive.parent_id)
+            self._clone_folder(file.get('name'), file.get('id'), dir_id)
+            msg['link'] = self.gdrive.dl_folder_prefix.format(dir_id)
+            msg['filename'] = file.get("name")
+            msg['size'] = readable_size(self.__TRANSFERRED_BYTES)
+            msg['type'] = "Folder"
+            msg['sub_folders'] = self.__TOTAL_FOLDERS
+            msg['files'] = self.__TOTAL_FILES
+
+        else:
+            durl = self._copy_file(file, self.gdrive.parent_id)
+            msg['filename'] = file.get("name")
+            msg['link'] = durl
+            msg['type'] = 'File'
+            msg['size'] = readable_size(self.__TRANSFERRED_BYTES)
+        msg['failed'] = self.__FAILED_CLONE
         return msg
