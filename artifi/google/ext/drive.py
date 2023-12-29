@@ -245,55 +245,6 @@ class GoogleDrive(Google):
         )
         return file_id
 
-    @retry(wait=wait_exponential(multiplier=2, min=3, max=6),
-           stop=stop_after_attempt(5),
-           retry=retry_if_exception_type(HttpError))
-    def List(self, folder_id):
-        """
-
-        @param folder_id:
-        @return:
-        """
-        page_token = None
-        q = f"'{folder_id}' in parents"
-        files = []
-        while True:
-            response = self._service.files().list(supportsTeamDrives=True,
-                                                  includeTeamDriveItems=True,
-                                                  q=q,
-                                                  spaces='drive',
-                                                  pageSize=200,
-                                                  fields='nextPageToken, files(id, name, mimeType,size)',
-                                                  corpora='allDrives',
-                                                  orderBy='folder, name',
-                                                  pageToken=page_token).execute()
-            files.extend(response.get('files', []))
-            page_token = response.get('nextPageToken', None)
-            if page_token is None:
-                break
-        return files
-
-    @retry(wait=wait_exponential(multiplier=2, min=3, max=6),
-           stop=stop_after_attempt(5),
-           retry=retry_if_exception_type(HttpError))
-    def Delete(self, link: str):
-        """
-
-        @param link:
-        @return:
-        """
-        file_id = self.get_id_by_url(link)
-        msg = {}
-        try:
-            res = self._service.files().delete(fileId=file_id,
-                                               supportsTeamDrives=self.is_td).execute()
-            msg = {'message': f"File Deleted Successfully! {res}"}
-        except HttpError as err:
-            reason = err.error_details[0]["reason"]
-            self.context.logger.error(f"Failed To Delete: {reason}")
-            DriveError(f"Something Went Wrong: {err}")
-        return msg
-
     def Upload(self, directory_path):
         """
 
@@ -539,8 +490,9 @@ class DriveDownload:
         self._drive_link = drive_link
         self.__DOWNLOADING = True
         self.__DOWNLOAD_START_TIME = time.time()
-        self.__CONTENT_PROPERTIES__ = self.gdrive.Properties(
-            self._drive_link).properties()
+        self._properties = self.gdrive.Properties(
+            self._drive_link)
+        self.__CONTENT_PROPERTIES__ = self._properties.properties()
 
         self.__DOWNLOADED_BYTES__ = 0
         self.__CURRENT_FILE_NAME = None
@@ -727,7 +679,7 @@ class DriveProperties:
         @param kwargs:
         @return:
         """
-        files = self.gdrive.List(kwargs['id'])
+        files = self.list(kwargs['id'])
         for file_ in files:
             if self.is_cancelled:
                 raise DrivePropertiesError("Properties was cancelled by User!")
@@ -770,6 +722,55 @@ class DriveProperties:
 
         return msg
 
+    @retry(wait=wait_exponential(multiplier=2, min=3, max=6),
+           stop=stop_after_attempt(5),
+           retry=retry_if_exception_type(HttpError))
+    def list(self, folder_id):
+        """
+
+        @param folder_id:
+        @return:
+        """
+        page_token = None
+        q = f"'{folder_id}' in parents"
+        files = []
+        while True:
+            response = self.gdrive.service.files().list(supportsTeamDrives=True,
+                                                        includeTeamDriveItems=True,
+                                                        q=q,
+                                                        spaces='drive',
+                                                        pageSize=200,
+                                                        fields='nextPageToken, files(id, name, mimeType,size)',
+                                                        corpora='allDrives',
+                                                        orderBy='folder, name',
+                                                        pageToken=page_token).execute()
+            files.extend(response.get('files', []))
+            page_token = response.get('nextPageToken', None)
+            if page_token is None:
+                break
+        return files
+
+    @retry(wait=wait_exponential(multiplier=2, min=3, max=6),
+           stop=stop_after_attempt(5),
+           retry=retry_if_exception_type(HttpError))
+    def delete(self, link: str):
+        """
+
+        @param link:
+        @return:
+        """
+        file_id = self.gdrive.get_id_by_url(link)
+        msg = {}
+        try:
+            res = self.gdrive.service.files().delete(fileId=file_id,
+                                                     supportsTeamDrives=self.gdrive.is_td).execute()
+            msg = {'message': f"File Deleted Successfully! {res}"}
+        except HttpError as err:
+            reason = err.error_details[0]["reason"]
+            self.gdrive.context.logger.error(f"Failed To Delete: {reason}")
+            DriveError(f"Something Went Wrong: {err}")
+        return msg
+
 
 class DriveCloner:
     """
@@ -779,9 +780,11 @@ class DriveCloner:
     def __init__(self, gdrive, drive_link):
         self.gdrive: GoogleDrive = gdrive
         self._drive_link = drive_link
+        self._properties = self.gdrive.Properties(
+            self._drive_link)
+        self.__CONTENT_PROPERTIES__ = self._properties.properties()
         self.__CLONE_STARTED_TIME = time.time()
-        self.__CONTENT_PROPERTIES__ = self.gdrive.Properties(
-            self._drive_link).properties()
+
         self.__FAILED_CLONE = []
 
         self.__TRANSFERRED_BYTES = 0
@@ -862,7 +865,7 @@ class DriveCloner:
         @param parent_id:
         @return:
         """
-        files = self.gdrive.List(file_id)
+        files = self._properties.list(file_id)
         for item in files:
             if self.is_cancelled:
                 raise DriveCloneError(
