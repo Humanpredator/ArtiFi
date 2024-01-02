@@ -17,18 +17,19 @@ def sanitize_name(string) -> str:
         forbidden_chars = forbidden_chars_windows
         # Remove forbidden characters
         sanitized_string = "".join(
-            char for char in string if char not in forbidden_chars)
+            char for char in string if char not in forbidden_chars
+        )
 
         # Remove double spaces and replace spaces with underscores
         sanitized_string = "_".join(sanitized_string.split())
     else:
-        sanitized_string = string.replace('/', ' ')
+        sanitized_string = string.replace("/", " ")
 
     return sanitized_string.strip()
 
 
 def get_nested_key(
-        d: Union[dict, List[dict]], key: str, default="UNKNOWN"
+    d: Union[dict, List[dict]], key: str, default="UNKNOWN"
 ) -> Union[str, dict, List[str]]:
     """
     Used to Get the specific key value from dict junk
@@ -115,7 +116,7 @@ def path_size(path):
 
 def speed_convert(size):
     """Hi human, you can't read bytes?"""
-    power = 2 ** 10
+    power = 2**10
     zero = 0
     units = {0: "", 1: "Kb/s", 2: "MB/s", 3: "Gb/s", 4: "Tb/s"}
     while size > power:
