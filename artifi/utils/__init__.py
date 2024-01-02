@@ -85,7 +85,7 @@ def readable_size(size_in_bytes) -> str:
     """
     units = ["B", "KB", "MB", "GB", "TB", "PB"]
 
-    if size_in_bytes is None:
+    if not size_in_bytes:
         return "0B"
     index = 0
     while size_in_bytes >= 1024:
@@ -94,7 +94,7 @@ def readable_size(size_in_bytes) -> str:
     try:
         return f"{round(size_in_bytes, 2)}{units[index]}"
     except IndexError:
-        return "File too large"
+        return "Opps! To Large"
 
 
 def path_size(path):
