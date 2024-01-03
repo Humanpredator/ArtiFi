@@ -14,7 +14,7 @@ from artifi.utils import fetch_mime_type
 class GooglePhotos(Google):
     def __init__(self, context, scope):
         super().__init__(context)
-        self._creds = self.oauth_creds(scope, 'photos')
+        self._creds = self.oauth_creds(scope, "photos")
         self._service: Session = Optional[Session]
         self._base_url = "https://photoslibrary.googleapis.com"
         self._version = "v1"
@@ -43,7 +43,7 @@ class GooglePhotos(Google):
         session = Session()
         session.headers = {
             "Authorization": f"Bearer {self._creds.token}",
-            "Content-type": "application/json"
+            "Content-type": "application/json",
         }
         self._service = session
 
@@ -53,11 +53,7 @@ class GooglePhotos(Google):
         @param album_name:
         @return:
         """
-        payload = {
-            "album": {
-                'title': album_name.strip()[:500]
-            }
-        }
+        payload = {"album": {"title": album_name.strip()[:500]}}
         url = f"{self._base_url}/{self._version}/albums"
         self.context.logger.info("Getting Media Details...!")
         response = self._service.post(url, json=payload, timeout=30)
@@ -74,13 +70,13 @@ class GooglePhotos(Google):
         """
         Get All Photos
         """
-        payload = {
-            'pageSize': 50
-        }
+        payload = {"pageSize": 50}
         media_url = f"{self._base_url}/{self._version}/albums"
         output = []
-        self.context.logger.info("Fetching All Media Items In Google Photos, "
-                                 "It May Take While Depending On No. photos")
+        self.context.logger.info(
+            "Fetching All Media Items In Google Photos, "
+            "It May Take While Depending On No. photos"
+        )
         while True:
             response = self._service.get(media_url, params=payload, timeout=30)
             if response.status_code in [401]:
@@ -90,10 +86,10 @@ class GooglePhotos(Google):
             elif response.status_code in [200]:
                 data = response.json()
 
-                if not (page_token := data.get('nextPageToken')):
+                if not (page_token := data.get("nextPageToken")):
                     break
-                payload['pageToken'] = page_token
-                output.extend(data.get('albums'))
+                payload["pageToken"] = page_token
+                output.extend(data.get("albums"))
             else:
                 response.raise_for_status()
 
@@ -125,11 +121,13 @@ class GooglePhotos(Google):
             "orderBy": "MediaMetadata.creation_time desc",
         }
         if album_id:
-            payload['albumId'] = album_id
+            payload["albumId"] = album_id
         media_url = f"{self._base_url}/{self._version}/mediaItems:search"
         output = []
-        self.context.logger.info("Fetching All Media Items In Google Photos, "
-                                 "It May Take While Depending On No. photos")
+        self.context.logger.info(
+            "Fetching All Media Items In Google Photos, "
+            "It May Take While Depending On No. photos"
+        )
         while True:
             response = self._service.post(media_url, json=payload, timeout=30)
             if response.status_code in [401]:
@@ -138,10 +136,10 @@ class GooglePhotos(Google):
                 continue
             elif response.status_code in [200]:
                 data = response.json()
-                output.extend(data.get('mediaItems'))
-                if not (page_token := data.get('nextPageToken')):
+                output.extend(data.get("mediaItems"))
+                if not (page_token := data.get("nextPageToken")):
                     break
-                payload['pageToken'] = page_token
+                payload["pageToken"] = page_token
             else:
                 response.raise_for_status()
 
@@ -208,10 +206,10 @@ class MediaIoPhotosUpload:
         mime_type = fetch_mime_type(self._file_path)
 
         headers = {
-            "Content-Length": '0',
-            "X-Goog-Upload-Command": 'start',
+            "Content-Length": "0",
+            "X-Goog-Upload-Command": "start",
             "X-Goog-Upload-Content-Type": mime_type,
-            "X-Goog-Upload-Protocol": 'resumable',
+            "X-Goog-Upload-Protocol": "resumable",
             "X-Goog-Upload-Raw-Size": str(self._get_file_size()),
         }
         url = f"{self._gphotos.base_url}/uploads"
@@ -220,37 +218,35 @@ class MediaIoPhotosUpload:
             self._gphotos.authorize()
             return self._upload_session()
         elif response.status_code in [200]:
-            return response.headers['X-Goog-Upload-URL']
+            return response.headers["X-Goog-Upload-URL"]
         else:
             response.raise_for_status()
 
     def _get_file_size(self):
         """
 
-        @return: 
+        @return:
         """
-        with open(self._file_path, 'rb') as file:
+        with open(self._file_path, "rb") as file:
             file.seek(0, 2)  # Seek to the end of the file
             return file.tell()
 
     def _upload_chunk(self, chunk, offset):
         """
 
-        @param chunk: 
-        @param offset: 
+        @param chunk:
+        @param offset:
         """
-        is_final_chunk = (offset + len(chunk) == self._get_file_size())
-        command = 'upload, finalize' if is_final_chunk else 'upload'
+        is_final_chunk = offset + len(chunk) == self._get_file_size()
+        command = "upload, finalize" if is_final_chunk else "upload"
 
         headers = {
-            'Content-Length': str(len(chunk)),
-            'X-Goog-Upload-Command': command,
-            'X-Goog-Upload-Offset': str(offset)
+            "Content-Length": str(len(chunk)),
+            "X-Goog-Upload-Command": command,
+            "X-Goog-Upload-Offset": str(offset),
         }
         response = self._gphotos.service.post(
-            self._upload_url,
-            headers=headers,
-            data=chunk
+            self._upload_url, headers=headers, data=chunk
         )
         if response.status_code in [401]:
             self._gphotos.authorize()
@@ -269,8 +265,8 @@ class MediaIoPhotosUpload:
                     "description": "Upload by ArtiFi",
                     "simpleMediaItem": {
                         "fileName": os.path.basename(self._file_path),
-                        "uploadToken": self._upload_token
-                    }
+                        "uploadToken": self._upload_token,
+                    },
                 }
             ]
         }
@@ -291,7 +287,7 @@ class MediaIoPhotosUpload:
         """
 
         offset = 0
-        with open(self._file_path, 'rb') as file:
+        with open(self._file_path, "rb") as file:
             while offset < self._get_file_size():
                 chunk = file.read(self._chunk_size)
                 self._upload_chunk(chunk, offset)
