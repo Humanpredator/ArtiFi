@@ -2,14 +2,12 @@
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 
-from artifi import Artifi
 from artifi.google import Google
 
 
 class GoogleCalendar(Google):
     def __init__(self, context, scope, calendar_id="primary"):
         super().__init__(context)
-        self.context: Artifi = context
         self._creds = self.oauth_creds(scope, 'calender')
         self.calendar_id = calendar_id
         self._service = build('calendar', 'v3', credentials=self._creds)

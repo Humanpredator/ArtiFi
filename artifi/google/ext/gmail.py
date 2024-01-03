@@ -1,14 +1,12 @@
 """Google Gmail API"""
 from googleapiclient.discovery import build
 
-from artifi import Artifi
 from artifi.google import Google
 
 
 class GoogleMail(Google):
     def __init__(self, context, scope):
         super().__init__(context)
-        self.context: Artifi = context
         self._creds = self.oauth_creds(scope, 'gmail')
         self._service = build("gmail", "v1", credentials=self._creds)
 

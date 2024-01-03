@@ -17,7 +17,7 @@ class Google:
         """@param context: pass :class Artifi"""
         self.context: Artifi = context
 
-    def oauth_creds(self, scope, service_user=False, cname='token'):
+    def oauth_creds(self, scope, cname='token', service_user=False):
         """
         This method used to gain access via Oauth-client
         @param service_user:

@@ -31,7 +31,8 @@ class BaseConfig:
         ):
             raise ConfigFileError("Failed to Load Config.env File")
         'Basic Config'
-        self.SQLALCHEMY_DATABASE_URI = os.getenv("SQLALCHEMY_DATABASE_URI")
+        self.SQLALCHEMY_DATABASE_URI = os.getenv("SQLALCHEMY_DATABASE_URI",
+                                                 "sqlite:///artifi.db")
         self.API_SECRET_KEY = os.getenv("API_SECRET_KEY")
         'CloudFlare Config'
         self.CLOUDFLARE_ACCOUNT_ID = os.getenv("CLOUDFLARE_ACCOUNT_ID")

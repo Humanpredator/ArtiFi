@@ -13,7 +13,6 @@ from googleapiclient.errors import HttpError
 from googleapiclient.http import MediaIoBaseDownload, MediaIoBaseUpload
 from tenacity import *
 
-from artifi import Artifi
 from artifi.config.ext.exception import DriveUploadError, DriveError, \
     DriveDownloadError, DriveCloneError, DrivePropertiesError
 from artifi.google import Google
@@ -74,7 +73,6 @@ class GoogleDrive(Google):
                  stop_duplicate=True
                  ):
         super().__init__(context)
-        self.context: Artifi = context
         self.scope = scope
         self.parent_id = drive_id
         self.use_sa = use_sa

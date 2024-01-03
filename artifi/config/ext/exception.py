@@ -24,3 +24,7 @@ class DriveCloneError(ArtifiException):
 
 class DrivePropertiesError(ArtifiException):
     """Drive Upload Cancelled"""
+
+
+class PhotoError(ArtifiException):
+    """Drive Base Error"""

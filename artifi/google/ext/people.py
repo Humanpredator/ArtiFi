@@ -3,7 +3,6 @@ from typing import Generator, Optional
 
 from googleapiclient.discovery import build
 
-from artifi import Artifi
 from artifi.google import Google
 
 
@@ -84,7 +83,6 @@ class GooglePeople(Google):
         @param scope:
         """
         super().__init__(context)
-        self.context: Artifi = context
         self._creds = self.oauth_creds(scope, 'people')
         self._service = build("people", "v1",
                               credentials=self._creds)
