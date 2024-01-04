@@ -4,7 +4,7 @@ import os
 import sys
 import traceback
 from datetime import datetime, timedelta
-from typing import List, Optional, Any
+from typing import Any, List, Optional
 
 import pytz
 from apscheduler.jobstores.memory import MemoryJobStore
@@ -16,6 +16,7 @@ from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session, declarative_base, sessionmaker
 
 from artifi.config.ext.logger import LogConfig
+
 from .config import BaseConfig
 
 
@@ -44,7 +45,7 @@ class Artifi(BaseConfig):
         self.logger: logging.Logger = LogConfig(self).logger
         self.db_engine: Engine = self._db_engine()
         self.fsapi: Flask = Flask(import_name)
-        self.tz: datetime.tzinfo = pytz.timezone('Asia/Kolkata')
+        self.tz: datetime.tzinfo = pytz.timezone("Asia/Kolkata")
         sys.excepthook = lambda exctype, value, tb: self.logger.critical(
             "".join(traceback.format_exception(exctype, value, tb))
         )
@@ -86,16 +87,16 @@ class Artifi(BaseConfig):
         return session_maker()
 
     def add_scheduler(
-            self,
-            function: func,
-            args: Optional[Any] = None,
-            job_id: Optional[str] = None,
-            start_date: Optional[str] = None,
-            start_time: Optional[str] = None,
-            end_date: Optional[str] = None,
-            end_time: Optional[str] = None,
-            interval: Optional[int] = None,
-            no_duplicate: bool = True,
+        self,
+        function: func,
+        args: Optional[Any] = None,
+        job_id: Optional[str] = None,
+        start_date: Optional[str] = None,
+        start_time: Optional[str] = None,
+        end_date: Optional[str] = None,
+        end_time: Optional[str] = None,
+        interval: Optional[int] = None,
+        no_duplicate: bool = True,
     ):
         """
         @param job_id:
@@ -123,18 +124,16 @@ class Artifi(BaseConfig):
         }
         start_date, end_date, start_time, end_time, interval = (
             value if value is not None else defaults[key]
-            for key, value in zip(defaults.keys(),
-                                  (start_date, end_date, start_time, end_time,
-                                   interval))
+            for key, value in zip(
+                defaults.keys(), (start_date, end_date, start_time, end_time, interval)
+            )
         )
 
         start_datetime = self.tz.localize(
-            datetime.strptime(f"{start_date} {start_time}",
-                              "%Y-%m-%d %H:%M")
+            datetime.strptime(f"{start_date} {start_time}", "%Y-%m-%d %H:%M")
         )
         end_datetime = self.tz.localize(
-            datetime.strptime(f"{end_date} {end_time}",
-                              "%Y-%m-%d %H:%M")
+            datetime.strptime(f"{end_date} {end_time}", "%Y-%m-%d %H:%M")
         )
         job_func_id = job_id if job_id else f"{function.__name__}_job"
         self._scheduler.add_job(
@@ -149,8 +148,10 @@ class Artifi(BaseConfig):
             jobstore=self.__class__.__name__,
         )
         self.logger.info(
-            (f"Function {function.__name__} was added to Scheduler "
-             f"with job ID: {job_func_id} ...!")
+            (
+                f"Function {function.__name__} was added to Scheduler "
+                f"with job ID: {job_func_id} ...!"
+            )
         )
 
     def start_scheduler(self):

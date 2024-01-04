@@ -83,9 +83,8 @@ class GooglePeople(Google):
         @param scope:
         """
         super().__init__(context)
-        self._creds = self.oauth_creds(scope, 'people')
-        self._service = build("people", "v1",
-                              credentials=self._creds)
+        self._creds = self.oauth_creds(scope, "people")
+        self._service = build("people", "v1", credentials=self._creds)
 
     def get_contacts(self) -> Generator[GoogleContactObj, None, None]:
         """fetch all available contacts"""
@@ -118,15 +117,13 @@ class GooglePeople(Google):
             "sipAddresses",
             "skills",
             "urls",
-            "userDefined"
+            "userDefined",
         ]
         results = (
             self._service.people()
             .connections()
             .list(
-                resourceName="people/me",
-                pageSize=1000,
-                personFields=','.join(fields)
+                resourceName="people/me", pageSize=1000, personFields=",".join(fields)
             )
             .execute()
         )

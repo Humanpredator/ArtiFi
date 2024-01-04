@@ -45,5 +45,4 @@ class WaMessageModel(Artifi.dbmodel):
     wa_profile_pid = Column(
         INTEGER(), ForeignKey("wa_profile.wa_profile_pid", ondelete="SET NULL")
     )
-    wa_profile_pid_fk = relationship("WaProfileModel",
-                                     foreign_keys=[wa_profile_pid])
+    wa_profile_pid_fk = relationship("WaProfileModel", foreign_keys=[wa_profile_pid])
