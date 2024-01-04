@@ -568,9 +568,6 @@ class DriveDownload:
         """
         new_file_name = sanitize_name(file['name'])
 
-        self.gdrive.context.logger.info(
-            f"Downloading FileName: {new_file_name}"
-        )
         if crm := export_mime.get(file['mimeType'], None):
             request = self.gdrive.service.files().export(fileId=file['id'],
                                                          mimeType=crm[0])
@@ -580,6 +577,16 @@ class DriveDownload:
 
         self.__CURRENT_FILE_NAME = new_file_name
         file_path = os.path.join(path, new_file_name)
+
+        if os.path.exists(file_path):
+            self.gdrive.context.logger.info(
+                f"FileName Already Exists: {new_file_name}"
+            )
+            return False
+
+        self.gdrive.context.logger.info(
+            f"Downloading FileName: {new_file_name}"
+        )
         fh = io.FileIO(file_path, 'wb')
         downloader = MediaIoBaseDownload(fh, request,
                                          chunksize=10 * 1024 * 1024)
@@ -618,19 +625,26 @@ class DriveDownload:
         self.__TOTAL_FILES += 1
         return True
 
-    def download(self):
+    def download(self, unique=True):
         """
         @return:
+        @param unique
+                :example Set 'True' to make new local folder to keep it isolated,
+                         Set 'False' to name local folder name as drive folder name,
+                         Not Recommended, Use it only to perform Sync
         """
         file_id = self.__CONTENT_PROPERTIES__['file_id']
+
         path = os.path.join(self.gdrive.context.directory,
-                            str(uuid.uuid4()).lower()[:5])
+                            str(uuid.uuid4()).lower()[:5]) if unique else (
+            self.gdrive.context.directory)
+
         if not os.path.exists(path):
             os.makedirs(path, exist_ok=True)
         output = {}
         file = self.gdrive.get_metadata(file_id)
         output['name'] = file.get('name')
-        output['path'] = path
+        output['path'] = os.path.join(path, self.__CONTENT_PROPERTIES__['filename'])
         if file.get("mimeType") == self.gdrive.drive_folder_mime:
             output['type'] = "Folder"
             self._download_folder(path, file)
