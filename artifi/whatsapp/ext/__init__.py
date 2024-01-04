@@ -1,1 +1,1 @@
-from . import wam_model
+"""Ext for WhatsApp"""

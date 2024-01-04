@@ -1,1 +1,1 @@
-from . import custom_command, custom_function, discord_model
+"""Misc Function for Discord"""

@@ -1,1 +1,1 @@
-from . import cfai
+"""Ext for Cloudflare"""

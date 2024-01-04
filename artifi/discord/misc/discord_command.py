@@ -1,12 +1,20 @@
+"""Override the Default Help Command"""
 import discord
 from discord.ext.commands import HelpCommand
 
 
 class MyHelpCommand(HelpCommand):
+    """Custom Help Command"""
+
     def __init__(self):
         super().__init__()
 
     async def send_bot_help(self, mapping):
+        """
+
+        @param mapping:
+        @return:
+        """
         prefix = self.context.prefix
         embed = discord.Embed(
             title="My Bot Help",
@@ -14,11 +22,8 @@ class MyHelpCommand(HelpCommand):
             color=discord.Color.blue(),
         )
 
-        # Specify the cog you want to hide
-        cogs_to_hide = ["Greeting", "ErrorHandler"]
-
         for cog, commands in mapping.items():
-            if cog is not None and cog.qualified_name not in cogs_to_hide:
+            if cog:
                 command_signatures = [
                     f"**``{prefix}{command.name}``**: {command.short_doc}"
                     for command in commands
@@ -31,6 +36,11 @@ class MyHelpCommand(HelpCommand):
         await self.get_destination().send(embed=embed)
 
     async def send_command_help(self, command):
+        """
+
+        @param command:
+        @return:
+        """
         prefix = self.context.prefix
         command_signature = f"{prefix}{command.name}"
         embed = discord.Embed(

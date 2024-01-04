@@ -1,1 +1,1 @@
-from . import music
+"""Entertainment Cog"""

@@ -1,1 +1,1 @@
-from . import auth
+"""Admin Cogs"""

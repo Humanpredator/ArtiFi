@@ -1,0 +1,1 @@
+"""Ext for Artifi Config"""
