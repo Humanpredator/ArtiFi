@@ -27,8 +27,7 @@ class GoogleWebSession(Google):
         self._chrome_path = self.context.CHROMEDRIVE_PATH
         self._headless = headless
         self._email: str = email
-        self._session_path = os.path.join(self.context.directory,
-                                          f"{self._email}.json")
+        self._session_path = os.path.join(self.context.directory, f"{self._email}.json")
         self._password: str = password
         self._user_agent: str = user_agent
 
@@ -81,8 +80,7 @@ class GoogleWebSession(Google):
                 page.fill('input[type="email"]', f"{self._email}")
                 page.click("div#identifierNext")
 
-                page.wait_for_selector('input[type="password"]',
-                                       state="visible")
+                page.wait_for_selector('input[type="password"]', state="visible")
                 page.fill('input[type="password"]', f"{self._password}")
                 page.click("div#passwordNext")
                 time.sleep(5)
