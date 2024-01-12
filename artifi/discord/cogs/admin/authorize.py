@@ -85,11 +85,10 @@ class Auth(Cog):
         """
         if not self._bot.owner_only(ctx):
             return await send_message(ctx, "Access Denied...!")
-        user_data = self._bot.get_all_users()
         emd = Embed(timestamp=datetime.now())
         emd.add_field(
             name="Sudo Users",
-            value="\n".join(str(user.user_id) for user in user_data),
+            value="\n".join(self._bot.get_all_users()),
             inline=False,
         )
         await send_message(ctx, embed=emd)
