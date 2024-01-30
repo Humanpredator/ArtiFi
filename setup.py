@@ -18,7 +18,7 @@ setup(
         "Programming Language :: Python :: 3.10",
     ],
     python_requires=">=3.10",
-    install_requires=['aiohttp==3.9.1',
+    install_requires=['aiohttp==3.9.2',
                       'aiosignal==1.3.1',
                       'APScheduler==3.10.4',
                       'async-timeout==4.0.3',
