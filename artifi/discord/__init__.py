@@ -16,12 +16,12 @@ class Discord(Bot):
     """Discord Bot"""
 
     def __init__(
-        self,
-        context,
-        command_prefix="!",
-        *,
-        intents=discord.Intents.all(),
-        **options: Any,
+            self,
+            context,
+            command_prefix="!",
+            *,
+            intents=discord.Intents.all(),
+            **options: Any,
     ):
         """
 
@@ -65,7 +65,7 @@ class Discord(Bot):
         if isinstance(ctx, Context):
             author_id = ctx.author.id
             return bool(
-                author_id in self.get_all_users()
+                str(author_id) in self.get_all_users()
                 or author_id == self.context.DISCORD_OWNER_ID
             )
         if isinstance(ctx, int):
