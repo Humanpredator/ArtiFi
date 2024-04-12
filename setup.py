@@ -1,4 +1,5 @@
 """Wheel File Build Setup"""
+
 from setuptools import find_packages, setup
 
 setup(
@@ -43,7 +44,7 @@ setup(
         "googleapis-common-protos==1.62.0",
         "greenlet==3.0.1",
         "httplib2==0.22.0",
-        "idna==3.6",
+        "idna==3.7",
         "instaloader==4.10.2",
         "itsdangerous==2.1.2",
         "Jinja2==3.1.3",
