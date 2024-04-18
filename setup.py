@@ -1,4 +1,5 @@
 """Wheel File Build Setup"""
+
 from setuptools import find_packages, setup
 
 setup(
@@ -19,7 +20,7 @@ setup(
     ],
     python_requires=">=3.10",
     install_requires=[
-        "aiohttp==3.9.1",
+        "aiohttp==3.9.4",
         "aiosignal==1.3.1",
         "APScheduler==3.10.4",
         "async-timeout==4.0.3",
