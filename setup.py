@@ -46,7 +46,7 @@ setup(
         "idna==3.6",
         "instaloader==4.10.2",
         "itsdangerous==2.1.2",
-        "Jinja2==3.1.3",
+        "Jinja2==3.1.4",
         "MarkupSafe==2.1.3",
         "multidict==6.0.4",
         "oauthlib==3.2.2",
