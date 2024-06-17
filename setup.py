@@ -1,4 +1,5 @@
 """Wheel File Build Setup"""
+
 from setuptools import find_packages, setup
 
 setup(
@@ -74,7 +75,7 @@ setup(
         "tzdata==2023.3",
         "tzlocal==5.2",
         "uritemplate==4.1.1",
-        "urllib3==2.1.0",
+        "urllib3==2.2.2",
         "wavelink==3.1.0",
         "Werkzeug==3.0.1",
         "yarl==1.9.2",
